@@ -43,6 +43,39 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = aws_iam_policy.lambda_logging.arn
 }
 
+# IAM Policy for S3 access
+resource "aws_iam_policy" "lambda_s3_policy" {
+  name        = "lambda_s3_policy"
+  description = "IAM policy for Lambda to access S3 buckets"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket",
+          "s3:GetObjectVersion",
+          "s3:GetObjectTagging"
+        ]
+        Effect   = "Allow"
+        Resource = [
+          "${aws_s3_bucket.demo_bucket.arn}",
+          "${aws_s3_bucket.demo_bucket.arn}/*",
+          "${aws_s3_bucket.frontend_bucket.arn}",
+          "${aws_s3_bucket.frontend_bucket.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+# Attach S3 policy to Lambda role
+resource "aws_iam_role_policy_attachment" "lambda_s3" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.lambda_s3_policy.arn
+}
+
 # CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
   name              = "/aws/lambda/${aws_lambda_function.my_lambda.function_name}"
@@ -66,13 +99,15 @@ resource "aws_lambda_function" "my_lambda" {
   
   environment {
     variables = {
-      ENVIRONMENT = "production"
+      ENVIRONMENT = "production",
+      DYNAMODB_TABLE = aws_dynamodb_table.data_table.name,
+      MAX_FILE_SIZE = "20971520"  # 20MB
     }
   }
   
-  # Configure timeout and memory
-  timeout     = 30
-  memory_size = 128
+  # Configure timeout and memory - increased for better performance
+  timeout     = 60
+  memory_size = 256
 }
 
 # CloudWatch Metric Alarm for Lambda Errors
@@ -166,3 +201,42 @@ resource "aws_cloudwatch_dashboard" "lambda_dashboard" {
   })
 }
 
+# S3 bucket notification configuration for demo bucket
+resource "aws_s3_bucket_notification" "bucket_notification" {
+  bucket = aws_s3_bucket.demo_bucket.id
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.my_lambda.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "uploads/"  # Optional: filter by prefix
+    filter_suffix       = ".json"     # Optional: filter by suffix
+  }
+
+  depends_on = [aws_lambda_permission.allow_bucket]
+}
+
+# Permission for S3 to invoke Lambda
+resource "aws_lambda_permission" "allow_bucket" {
+  statement_id  = "AllowExecutionFromS3Bucket"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.my_lambda.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.demo_bucket.arn
+}
+
+# Add CloudWatch alarm for Lambda duration
+resource "aws_cloudwatch_metric_alarm" "lambda_duration_alarm" {
+  alarm_name          = "${aws_lambda_function.my_lambda.function_name}-duration"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Duration"
+  namespace           = "AWS/Lambda"
+  period              = 60
+  statistic           = "Maximum"
+  threshold           = 50000  # 50 seconds (in milliseconds)
+  alarm_description   = "This metric monitors lambda function duration"
+  
+  dimensions = {
+    FunctionName = aws_lambda_function.my_lambda.function_name
+  }
+}
