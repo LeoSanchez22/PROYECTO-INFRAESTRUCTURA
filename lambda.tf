@@ -53,12 +53,10 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 
 # Lambda Function
 resource "aws_lambda_function" "my_lambda" {
-  function_name = "my-lambda-function"
-  # Replace with your code package location
-  filename         = "lambda_function.zip" # Create this file or use S3 bucket
+  function_name = "${var.project_name}-lambda-${terraform.workspace}"
+  filename         = "lambda_function.zip"
   source_code_hash = filebase64sha256("lambda_function.zip")
   
-  # Replace with your handler and runtime as needed
   handler = "index.handler"
   runtime = "nodejs18.x"
   
@@ -66,13 +64,19 @@ resource "aws_lambda_function" "my_lambda" {
   
   environment {
     variables = {
-      ENVIRONMENT = "production"
+      ENVIRONMENT = terraform.workspace
+      APPSYNC_API_URL = aws_appsync_graphql_api.main.uris["GRAPHQL"]
     }
   }
   
   # Configure timeout and memory
-  timeout     = 30
-  memory_size = 128
+  timeout     = var.lambda_timeout
+  memory_size = var.lambda_memory_size
+  
+  tags = {
+    Name        = "${var.project_name}-lambda"
+    Environment = terraform.workspace
+  }
 }
 
 # CloudWatch Metric Alarm for Lambda Errors

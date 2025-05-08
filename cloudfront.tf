@@ -5,7 +5,7 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
   comment             = "Distribution for frontend application"
   default_root_object = "index.html"
   
-  # Origin configuration (S3 bucket assumed, adjust as needed)
+  # Origin configuration for S3 bucket (Web UI)
   origin {
     domain_name = aws_s3_bucket.frontend_bucket.bucket_regional_domain_name
     origin_id   = "S3-frontend"
@@ -15,7 +15,20 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
     }
   }
   
-  # Default cache behavior
+  # Origin configuration for AppSync API
+  origin {
+    domain_name = replace(replace(aws_appsync_graphql_api.main.uris["GRAPHQL"], "https://", ""), "/graphql", "")
+    origin_id   = "AppSync-API"
+    
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+  
+  # Default cache behavior for S3 content (Web UI)
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
@@ -33,13 +46,27 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
+  }
+  
+  # Cache behavior for AppSync API
+  ordered_cache_behavior {
+    path_pattern     = "/graphql*"
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "AppSync-API"
     
-    # Optional - Lambda function association for authentication
-    # lambda_function_association {
-    #   event_type   = "viewer-request"
-    #   lambda_arn   = aws_lambda_function.auth_lambda.qualified_arn
-    #   include_body = false
-    # }
+    forwarded_values {
+      query_string = true
+      headers      = ["Authorization", "Content-Type", "x-api-key"]
+      cookies {
+        forward = "all"
+      }
+    }
+    
+    viewer_protocol_policy = "https-only"
+    min_ttl                = 0
+    default_ttl            = 0
+    max_ttl                = 0
   }
   
   # Restrictions
@@ -57,7 +84,7 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
     # ssl_support_method = "sni-only"
   }
   
-  # Optional: Custom error responses
+  # Custom error responses
   custom_error_response {
     error_code            = 403
     response_code         = 200
@@ -72,12 +99,15 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
     error_caching_min_ttl = 10
   }
   
+  # Associate with WAF Web ACL
+  web_acl_id = aws_wafv2_web_acl.cloudfront_waf.arn
+  
   # Add price class
   price_class = "PriceClass_100"
   
   # Add tags
   tags = {
-    Environment = "production"
+    Environment = terraform.workspace
     Name        = "Frontend-Distribution"
   }
 }
@@ -87,21 +117,10 @@ resource "aws_cloudfront_origin_access_identity" "oai" {
   comment = "OAI for frontend website"
 }
 
-# Outputs
-output "cloudfront_distribution_id" {
-  value = aws_cloudfront_distribution.frontend_distribution.id
-}
-
+# Output for CloudFront domain name
 output "cloudfront_domain_name" {
   value = aws_cloudfront_distribution.frontend_distribution.domain_name
 }
 
 # Current AWS region data source
 data "aws_region" "current" {}
-
-# Note: This output assumes Cognito User Pool has a domain configured.
-# If not, you will need to add a domain to your Cognito User Pool configuration.
-output "cognito_hosted_ui_url" {
-  value = "https://${aws_cognito_user_pool.user_pool.domain}.auth.${data.aws_region.current.name}.amazoncognito.com"
-  description = "URL for Cognito Hosted UI (requires domain configuration)"
-}
