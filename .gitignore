@@ -51,3 +51,11 @@ lambda_function.zip
 ehthumbs.db
 Thumbs.db
 
+# Frontend
+node_modules/
+**/node_modules/
+dist/
+build/
+.next/
+.cache/
+

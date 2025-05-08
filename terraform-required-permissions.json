@@ -1,0 +1,24 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "appsync:*",
+                "ecr:*",
+                "ecs:*",
+                "wafv2:*",
+                "lambda:*",
+                "cloudwatch:*",
+                "logs:*",
+                "cloudfront:*",
+                "cognito-idp:*",
+                "dynamodb:*",
+                "s3:*",
+                "iam:PassRole"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+
