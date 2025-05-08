@@ -1,0 +1,33 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "appsync:CreateGraphqlApi",
+                "appsync:*",
+                "dynamodb:CreateTable",
+                "dynamodb:*",
+                "ecr:CreateRepository",
+                "ecr:*",
+                "ecs:CreateCluster",
+                "ecs:*",
+                "wafv2:CreateWebACL",
+                "wafv2:*",
+                "s3:*",
+                "iam:*",
+                "lambda:*",
+                "cloudfront:*",
+                "cloudwatch:*",
+                "logs:*",
+                "cognito-idp:*",
+                "ec2:*",
+                "elasticloadbalancing:*",
+                "route53:*",
+                "acm:*"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+
