@@ -1,0 +1,110 @@
+{
+  "version": "1.0",
+  "log_formats": {
+    "connection_log": {
+      "format": {
+        "timestamp": "timestamp",
+        "level": "string",
+        "event_type": "connection",
+        "connection_id": "string",
+        "user_id": "string",
+        "ip_address": "string",
+        "user_agent": "string",
+        "status": "string",
+        "session_duration": "number",
+        "message": "string"
+      },
+      "description": "Logs connection events such as user logins, logouts, and connection errors"
+    },
+    "resource_log": {
+      "format": {
+        "timestamp": "timestamp",
+        "level": "string",
+        "event_type": "resource",
+        "service": "string",
+        "instance_id": "string",
+        "memory_total": "number",
+        "memory_used": "number",
+        "cpu_percent": "number",
+        "disk_used_percent": "number",
+        "message": "string"
+      },
+      "description": "Logs resource utilization metrics for services"
+    },
+    "error_log": {
+      "format": {
+        "timestamp": "timestamp",
+        "level": "error",
+        "event_type": "error",
+        "error_code": "string",
+        "error_type": "string",
+        "service": "string",
+        "request_id": "string",
+        "user_id": "string",
+        "stack_trace": "string",
+        "message": "string"
+      },
+      "description": "Logs detailed error information for troubleshooting"
+    },
+    "api_log": {
+      "format": {
+        "timestamp": "timestamp",
+        "level": "string",
+        "event_type": "api",
+        "request_id": "string",
+        "http_method": "string",
+        "resource_path": "string",
+        "status_code": "number",
+        "duration": "number",
+        "user_id": "string",
+        "ip_address": "string",
+        "request_size": "number",
+        "response_size": "number",
+        "message": "string"
+      },
+      "description": "Logs API request details for performance monitoring and usage analytics"
+    }
+  },
+  "log_groups": {
+    "connection": "/academic-scheduler/connection",
+    "resource": "/academic-scheduler/resource",
+    "error": "/academic-scheduler/error",
+    "api": "/academic-scheduler/api"
+  },
+  "retention_days": 30,
+  "metric_filters": [
+    {
+      "name": "ErrorCount",
+      "pattern": "{ $.level = \"error\" }",
+      "namespace": "AcademicScheduler",
+      "metric_name": "ErrorCount",
+      "value": "1",
+      "default_value": "0"
+    },
+    {
+      "name": "APILatency",
+      "pattern": "{ $.event_type = \"api\" }",
+      "namespace": "AcademicScheduler",
+      "metric_name": "APILatency",
+      "value": "$.duration",
+      "default_value": "0"
+    },
+    {
+      "name": "MemoryUsage",
+      "pattern": "{ $.event_type = \"resource\" }",
+      "namespace": "AcademicScheduler",
+      "metric_name": "MemoryUsage",
+      "value": "$.memory_used",
+      "default_value": "0"
+    },
+    {
+      "name": "ActiveConnections",
+      "pattern": "{ $.event_type = \"connection\" && $.status = \"active\" }",
+      "namespace": "AcademicScheduler",
+      "metric_name": "ActiveConnections",
+      "value": "1",
+      "default_value": "0"
+    }
+  ]
+}
+
