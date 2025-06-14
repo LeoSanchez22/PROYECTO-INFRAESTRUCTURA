@@ -1,9 +1,15 @@
-# CloudFront Distribution
+# CloudFront Distribution with Security Enhancements
+# - WAF Protection (via waf.tf)
+# - TLS 1.2+ with modern cipher suites
+# - Access logging to S3
 resource "aws_cloudfront_distribution" "frontend_distribution" {
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "Distribution for frontend application"
+  comment             = "Distribution for frontend application with security enhancements"
   default_root_object = "index.html"
+  
+  # Associate with AWS WAF Web ACL
+  web_acl_id          = aws_wafv2_web_acl.cloudfront_waf.arn
   
   # Origin configuration (S3 bucket assumed, adjust as needed)
   origin {
@@ -49,12 +55,25 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
     }
   }
   
-  # SSL Certificate
+  # Enhanced SSL/TLS Configuration
+  # - Uses custom ACM certificate
+  # - Enforces TLS 1.2 or higher
+  # - Implements SNI for multiple certificates support
   viewer_certificate {
-    cloudfront_default_certificate = true
-    # Use this instead if you have a custom domain
-    # acm_certificate_arn = aws_acm_certificate.cert.arn
-    # ssl_support_method = "sni-only"
+    acm_certificate_arn      = local.certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+    # Fallback to CloudFront default certificate if no custom certificate is provided
+    cloudfront_default_certificate = local.certificate_arn == null ? true : false
+  }
+  
+  # Access Logging Configuration
+  # - Logs stored in dedicated S3 bucket with encryption
+  # - Lifecycle policies manage log retention
+  logging_config {
+    include_cookies = false
+    bucket          = aws_s3_bucket.cloudfront_logs.bucket_domain_name
+    prefix          = "cloudfront/"
   }
   
   # Optional: Custom error responses
