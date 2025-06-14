@@ -53,6 +53,22 @@
 		<testcase name="[NONE][CKV_AWS_216] Ensure CloudFront distribution is enabled" classname="/cloudfront.tf.aws_cloudfront_distribution.frontend_distribution" file="/cloudfront.tf"/>
 		<testcase name="[NONE][CKV_AWS_305] Ensure CloudFront distribution has a default root object configured" classname="/cloudfront.tf.aws_cloudfront_distribution.frontend_distribution" file="/cloudfront.tf"/>
 		<testcase name="[NONE][CKV_AWS_68] CloudFront Distribution should have WAF enabled" classname="/cloudfront.tf.aws_cloudfront_distribution.frontend_distribution" file="/cloudfront.tf"/>
+		<testcase name="[NONE][CKV_AWS_358] Ensure AWS GitHub Actions OIDC authorization policies only allow safe claims and claim order" classname="/frontend_s3.tf.aws_iam_policy_document.s3_policy" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_1] Ensure IAM policies that allow full &quot;*-*&quot; administrative privileges are not created" classname="/frontend_s3.tf.aws_iam_policy_document.s3_policy" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_110] Ensure IAM policies does not allow privilege escalation" classname="/frontend_s3.tf.aws_iam_policy_document.s3_policy" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_356] Ensure no IAM policies documents allow &quot;*&quot; as a statement's resource for restrictable actions" classname="/frontend_s3.tf.aws_iam_policy_document.s3_policy" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_109] Ensure IAM policies does not allow permissions management / resource exposure without constraints" classname="/frontend_s3.tf.aws_iam_policy_document.s3_policy" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_107] Ensure IAM policies does not allow credentials exposure" classname="/frontend_s3.tf.aws_iam_policy_document.s3_policy" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_49] Ensure no IAM policies documents allow &quot;*&quot; as a statement's actions" classname="/frontend_s3.tf.aws_iam_policy_document.s3_policy" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_108] Ensure IAM policies does not allow data exfiltration" classname="/frontend_s3.tf.aws_iam_policy_document.s3_policy" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_111] Ensure IAM policies does not allow write access without constraints" classname="/frontend_s3.tf.aws_iam_policy_document.s3_policy" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_283] Ensure no IAM policies documents allow ALL or any AWS principal permissions to the resource" classname="/frontend_s3.tf.aws_iam_policy_document.s3_policy" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_93] Ensure S3 bucket policy does not lockout all but root user. (Prevent lockouts needing root account fixes)" classname="/frontend_s3.tf.aws_s3_bucket.frontend_bucket" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_54] Ensure S3 bucket has block public policy enabled" classname="/frontend_s3.tf.aws_s3_bucket_public_access_block.frontend_bucket_access" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_56] Ensure S3 bucket has 'restrict_public_buckets' enabled" classname="/frontend_s3.tf.aws_s3_bucket_public_access_block.frontend_bucket_access" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_53] Ensure S3 bucket has block public ACLS enabled" classname="/frontend_s3.tf.aws_s3_bucket_public_access_block.frontend_bucket_access" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_55] Ensure S3 bucket has ignore public ACLs enabled" classname="/frontend_s3.tf.aws_s3_bucket_public_access_block.frontend_bucket_access" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_93] Ensure S3 bucket policy does not lockout all but root user. (Prevent lockouts needing root account fixes)" classname="/frontend_s3.tf.aws_s3_bucket_policy.frontend_bucket_policy" file="/frontend_s3.tf"/>
 		<testcase name="[NONE][CKV_AWS_61] Ensure AWS IAM policy does not allow assume role permission across all services" classname="/lambda.tf.aws_iam_role.lambda_role" file="/lambda.tf"/>
 		<testcase name="[NONE][CKV_AWS_274] Disallow IAM roles, users, and groups from using the AWS AdministratorAccess policy" classname="/lambda.tf.aws_iam_role.lambda_role" file="/lambda.tf"/>
 		<testcase name="[NONE][CKV_AWS_60] Ensure IAM role allows only specific services or principals to assume it" classname="/lambda.tf.aws_iam_role.lambda_role" file="/lambda.tf"/>
@@ -71,22 +87,6 @@
 		<testcase name="[NONE][CKV_AWS_319] Ensure that CloudWatch alarm actions are enabled" classname="/lambda.tf.aws_cloudwatch_metric_alarm.lambda_error_alarm" file="/lambda.tf"/>
 		<testcase name="[NONE][CKV_AWS_319] Ensure that CloudWatch alarm actions are enabled" classname="/lambda.tf.aws_cloudwatch_metric_alarm.lambda_throttle_alarm" file="/lambda.tf"/>
 		<testcase name="[NONE][CKV_AWS_41] Ensure no hard coded AWS access key and secret key exists in provider" classname="/main.tf.aws.default" file="/main.tf"/>
-		<testcase name="[NONE][CKV_AWS_93] Ensure S3 bucket policy does not lockout all but root user. (Prevent lockouts needing root account fixes)" classname="/s3.tf.aws_s3_bucket.frontend_bucket" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_54] Ensure S3 bucket has block public policy enabled" classname="/s3.tf.aws_s3_bucket_public_access_block.frontend_bucket_access" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_56] Ensure S3 bucket has 'restrict_public_buckets' enabled" classname="/s3.tf.aws_s3_bucket_public_access_block.frontend_bucket_access" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_53] Ensure S3 bucket has block public ACLS enabled" classname="/s3.tf.aws_s3_bucket_public_access_block.frontend_bucket_access" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_55] Ensure S3 bucket has ignore public ACLs enabled" classname="/s3.tf.aws_s3_bucket_public_access_block.frontend_bucket_access" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_93] Ensure S3 bucket policy does not lockout all but root user. (Prevent lockouts needing root account fixes)" classname="/s3.tf.aws_s3_bucket_policy.frontend_bucket_policy" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_358] Ensure AWS GitHub Actions OIDC authorization policies only allow safe claims and claim order" classname="/s3.tf.aws_iam_policy_document.s3_policy" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_1] Ensure IAM policies that allow full &quot;*-*&quot; administrative privileges are not created" classname="/s3.tf.aws_iam_policy_document.s3_policy" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_110] Ensure IAM policies does not allow privilege escalation" classname="/s3.tf.aws_iam_policy_document.s3_policy" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_356] Ensure no IAM policies documents allow &quot;*&quot; as a statement's resource for restrictable actions" classname="/s3.tf.aws_iam_policy_document.s3_policy" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_109] Ensure IAM policies does not allow permissions management / resource exposure without constraints" classname="/s3.tf.aws_iam_policy_document.s3_policy" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_107] Ensure IAM policies does not allow credentials exposure" classname="/s3.tf.aws_iam_policy_document.s3_policy" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_49] Ensure no IAM policies documents allow &quot;*&quot; as a statement's actions" classname="/s3.tf.aws_iam_policy_document.s3_policy" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_108] Ensure IAM policies does not allow data exfiltration" classname="/s3.tf.aws_iam_policy_document.s3_policy" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_111] Ensure IAM policies does not allow write access without constraints" classname="/s3.tf.aws_iam_policy_document.s3_policy" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_283] Ensure no IAM policies documents allow ALL or any AWS principal permissions to the resource" classname="/s3.tf.aws_iam_policy_document.s3_policy" file="/s3.tf"/>
 		<testcase name="[NONE][CKV_AWS_93] Ensure S3 bucket policy does not lockout all but root user. (Prevent lockouts needing root account fixes)" classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
 		<testcase name="[NONE][CKV_AWS_54] Ensure S3 bucket has block public policy enabled" classname="/s3_logs.tf.aws_s3_bucket_public_access_block.logs_public_access_block" file="/s3_logs.tf"/>
 		<testcase name="[NONE][CKV_AWS_56] Ensure S3 bucket has 'restrict_public_buckets' enabled" classname="/s3_logs.tf.aws_s3_bucket_public_access_block.logs_public_access_block" file="/s3_logs.tf"/>
@@ -126,61 +126,61 @@
 		<testcase name="[NONE][CKV_AWS_192] Ensure WAF prevents message lookup in Log4j2. See CVE-2021-44228 aka log4jshell" classname="/waf.tf.aws_wafv2_web_acl.cloudfront_waf" file="/waf.tf"/>
 		<testcase name="[NONE][CKV_AWS_175] Ensure WAF has associated rules" classname="/waf.tf.aws_wafv2_web_acl.cloudfront_waf" file="/waf.tf"/>
 		<testcase name="[NONE][CKV_AWS_342] Ensure WAF rule has any actions" classname="/waf.tf.aws_wafv2_web_acl.cloudfront_waf" file="/waf.tf"/>
+		<testcase name="[NONE][CKV2_AWS_61] Ensure that an S3 bucket has a lifecycle configuration" classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
+		<testcase name="[NONE][CKV2_AWS_61] Ensure that an S3 bucket has a lifecycle configuration" classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
+		<testcase name="[NONE][CKV2_AWS_61] Ensure that an S3 bucket has a lifecycle configuration" classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
+		<testcase name="[NONE][CKV2_AWS_61] Ensure that an S3 bucket has a lifecycle configuration" classname="/frontend_s3.tf.aws_s3_bucket.frontend_bucket" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV2_AWS_61] Ensure that an S3 bucket has a lifecycle configuration" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
+		<testcase name="[NONE][CKV_AWS_145] Ensure that S3 buckets are encrypted with KMS by default" classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
+		<testcase name="[NONE][CKV_AWS_145] Ensure that S3 buckets are encrypted with KMS by default" classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
+		<testcase name="[NONE][CKV_AWS_145] Ensure that S3 buckets are encrypted with KMS by default" classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
+		<testcase name="[NONE][CKV_AWS_145] Ensure that S3 buckets are encrypted with KMS by default" classname="/frontend_s3.tf.aws_s3_bucket.frontend_bucket" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_145] Ensure that S3 buckets are encrypted with KMS by default" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
 		<testcase name="[NONE][CKV2_AWS_62] Ensure S3 buckets should have event notifications enabled" classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
 		<testcase name="[NONE][CKV2_AWS_62] Ensure S3 buckets should have event notifications enabled" classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
 		<testcase name="[NONE][CKV2_AWS_62] Ensure S3 buckets should have event notifications enabled" classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
-		<testcase name="[NONE][CKV2_AWS_62] Ensure S3 buckets should have event notifications enabled" classname="/s3.tf.aws_s3_bucket.frontend_bucket" file="/s3.tf"/>
+		<testcase name="[NONE][CKV2_AWS_62] Ensure S3 buckets should have event notifications enabled" classname="/frontend_s3.tf.aws_s3_bucket.frontend_bucket" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
+		<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
+		<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
+		<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/frontend_s3.tf.aws_s3_bucket.frontend_bucket" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
 		<testcase name="[NONE][CKV2_AWS_75] Ensure no open CORS policy" classname="/lambda.tf.aws_lambda_function.my_lambda" file="/lambda.tf"/>
+		<testcase name="[NONE][CKV_AWS_20] S3 Bucket has an ACL defined which allows public READ access." classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
+		<testcase name="[NONE][CKV_AWS_20] S3 Bucket has an ACL defined which allows public READ access." classname="/frontend_s3.tf.aws_s3_bucket.frontend_bucket" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_20] S3 Bucket has an ACL defined which allows public READ access." classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
+		<testcase name="[NONE][CKV_AWS_20] S3 Bucket has an ACL defined which allows public READ access." classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
+		<testcase name="[NONE][CKV_AWS_20] S3 Bucket has an ACL defined which allows public READ access." classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
 		<testcase name="[NONE][CKV2_AWS_46] Ensure AWS CloudFront Distribution with S3 have Origin Access set to enabled" classname="/cloudfront.tf.aws_cloudfront_distribution.frontend_distribution" file="/cloudfront.tf"/>
 		<testcase name="[NONE][CKV2_AWS_71] Ensure AWS ACM Certificate domain name does not include wildcards" classname="/acm.tf.aws_acm_certificate.cloudfront_cert[0]" file="/acm.tf"/>
 		<testcase name="[NONE][CKV2_AWS_56] Ensure AWS Managed IAMFullAccess IAM policy is not used." classname="/lambda.tf.aws_iam_role.lambda_role" file="/lambda.tf"/>
 		<testcase name="[NONE][CKV2_AWS_56] Ensure AWS Managed IAMFullAccess IAM policy is not used." classname="/s3_security.tf.aws_iam_role.replication_role" file="/s3_security.tf"/>
-		<testcase name="[NONE][CKV_AWS_20] S3 Bucket has an ACL defined which allows public READ access." classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
-		<testcase name="[NONE][CKV_AWS_20] S3 Bucket has an ACL defined which allows public READ access." classname="/s3.tf.aws_s3_bucket.frontend_bucket" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_20] S3 Bucket has an ACL defined which allows public READ access." classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
-		<testcase name="[NONE][CKV_AWS_20] S3 Bucket has an ACL defined which allows public READ access." classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
-		<testcase name="[NONE][CKV_AWS_20] S3 Bucket has an ACL defined which allows public READ access." classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
-		<testcase name="[NONE][CKV2_AWS_40] Ensure AWS IAM policy does not allow full IAM privileges" classname="/lambda.tf.aws_iam_policy.lambda_logging" file="/lambda.tf"/>
-		<testcase name="[NONE][CKV2_AWS_40] Ensure AWS IAM policy does not allow full IAM privileges" classname="/s3.tf.aws_iam_policy_document.s3_policy" file="/s3.tf"/>
-		<testcase name="[NONE][CKV2_AWS_61] Ensure that an S3 bucket has a lifecycle configuration" classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
-		<testcase name="[NONE][CKV2_AWS_61] Ensure that an S3 bucket has a lifecycle configuration" classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
-		<testcase name="[NONE][CKV2_AWS_61] Ensure that an S3 bucket has a lifecycle configuration" classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
-		<testcase name="[NONE][CKV2_AWS_61] Ensure that an S3 bucket has a lifecycle configuration" classname="/s3.tf.aws_s3_bucket.frontend_bucket" file="/s3.tf"/>
-		<testcase name="[NONE][CKV2_AWS_61] Ensure that an S3 bucket has a lifecycle configuration" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
 		<testcase name="[NONE][CKV2_AWS_54] Ensure AWS CloudFront distribution is using secure SSL protocols for HTTPS communication" classname="/cloudfront.tf.aws_cloudfront_distribution.frontend_distribution" file="/cloudfront.tf"/>
+		<testcase name="[NONE][CKV2_AWS_72] Ensure AWS CloudFront origin protocol policy enforces HTTPS-only" classname="/cloudfront.tf.aws_cloudfront_distribution.frontend_distribution" file="/cloudfront.tf"/>
+		<testcase name="[NONE][CKV2_AWS_42] Ensure AWS CloudFront distribution uses custom SSL certificate" classname="/cloudfront.tf.aws_cloudfront_distribution.frontend_distribution" file="/cloudfront.tf"/>
+		<testcase name="[NONE][CKV2_AWS_40] Ensure AWS IAM policy does not allow full IAM privileges" classname="/frontend_s3.tf.aws_iam_policy_document.s3_policy" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV2_AWS_40] Ensure AWS IAM policy does not allow full IAM privileges" classname="/lambda.tf.aws_iam_policy.lambda_logging" file="/lambda.tf"/>
 		<testcase name="[NONE][CKV_AWS_57] S3 Bucket has an ACL defined which allows public WRITE access." classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
-		<testcase name="[NONE][CKV_AWS_57] S3 Bucket has an ACL defined which allows public WRITE access." classname="/s3.tf.aws_s3_bucket.frontend_bucket" file="/s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_57] S3 Bucket has an ACL defined which allows public WRITE access." classname="/frontend_s3.tf.aws_s3_bucket.frontend_bucket" file="/frontend_s3.tf"/>
 		<testcase name="[NONE][CKV_AWS_57] S3 Bucket has an ACL defined which allows public WRITE access." classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
 		<testcase name="[NONE][CKV_AWS_57] S3 Bucket has an ACL defined which allows public WRITE access." classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
 		<testcase name="[NONE][CKV_AWS_57] S3 Bucket has an ACL defined which allows public WRITE access." classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
-		<testcase name="[NONE][CKV2_AWS_72] Ensure AWS CloudFront origin protocol policy enforces HTTPS-only" classname="/cloudfront.tf.aws_cloudfront_distribution.frontend_distribution" file="/cloudfront.tf"/>
-		<testcase name="[NONE][CKV2_AWS_42] Ensure AWS CloudFront distribution uses custom SSL certificate" classname="/cloudfront.tf.aws_cloudfront_distribution.frontend_distribution" file="/cloudfront.tf"/>
-		<testcase name="[NONE][CKV_AWS_144] Ensure that S3 bucket has cross-region replication enabled" classname="/s3.tf.aws_s3_bucket.frontend_bucket" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_144] Ensure that S3 bucket has cross-region replication enabled" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
 		<testcase name="[NONE][CKV_AWS_18] Ensure the S3 bucket has access logging enabled" classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
 		<testcase name="[NONE][CKV_AWS_18] Ensure the S3 bucket has access logging enabled" classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
 		<testcase name="[NONE][CKV_AWS_18] Ensure the S3 bucket has access logging enabled" classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
-		<testcase name="[NONE][CKV_AWS_18] Ensure the S3 bucket has access logging enabled" classname="/s3.tf.aws_s3_bucket.frontend_bucket" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
-		<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
-		<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
-		<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/s3.tf.aws_s3_bucket.frontend_bucket" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
+		<testcase name="[NONE][CKV_AWS_18] Ensure the S3 bucket has access logging enabled" classname="/frontend_s3.tf.aws_s3_bucket.frontend_bucket" file="/frontend_s3.tf"/>
 		<testcase name="[NONE][CKV2_AWS_6] Ensure that S3 bucket has a Public Access block" classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
-		<testcase name="[NONE][CKV2_AWS_6] Ensure that S3 bucket has a Public Access block" classname="/s3.tf.aws_s3_bucket.frontend_bucket" file="/s3.tf"/>
+		<testcase name="[NONE][CKV2_AWS_6] Ensure that S3 bucket has a Public Access block" classname="/frontend_s3.tf.aws_s3_bucket.frontend_bucket" file="/frontend_s3.tf"/>
 		<testcase name="[NONE][CKV2_AWS_6] Ensure that S3 bucket has a Public Access block" classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
 		<testcase name="[NONE][CKV2_AWS_6] Ensure that S3 bucket has a Public Access block" classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
 		<testcase name="[NONE][CKV2_AWS_6] Ensure that S3 bucket has a Public Access block" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
+		<testcase name="[NONE][CKV_AWS_144] Ensure that S3 bucket has cross-region replication enabled" classname="/frontend_s3.tf.aws_s3_bucket.frontend_bucket" file="/frontend_s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_144] Ensure that S3 bucket has cross-region replication enabled" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
 		<testcase name="[NONE][CKV_AWS_19] Ensure all data stored in the S3 bucket is securely encrypted at rest" classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
 		<testcase name="[NONE][CKV_AWS_19] Ensure all data stored in the S3 bucket is securely encrypted at rest" classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
 		<testcase name="[NONE][CKV_AWS_19] Ensure all data stored in the S3 bucket is securely encrypted at rest" classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
-		<testcase name="[NONE][CKV_AWS_19] Ensure all data stored in the S3 bucket is securely encrypted at rest" classname="/s3.tf.aws_s3_bucket.frontend_bucket" file="/s3.tf"/>
+		<testcase name="[NONE][CKV_AWS_19] Ensure all data stored in the S3 bucket is securely encrypted at rest" classname="/frontend_s3.tf.aws_s3_bucket.frontend_bucket" file="/frontend_s3.tf"/>
 		<testcase name="[NONE][CKV_AWS_19] Ensure all data stored in the S3 bucket is securely encrypted at rest" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
-		<testcase name="[NONE][CKV_AWS_145] Ensure that S3 buckets are encrypted with KMS by default" classname="/s3_logs.tf.aws_s3_bucket.cloudfront_logs" file="/s3_logs.tf"/>
-		<testcase name="[NONE][CKV_AWS_145] Ensure that S3 buckets are encrypted with KMS by default" classname="/s3_security.tf.aws_s3_bucket.s3_logs_bucket" file="/s3_security.tf"/>
-		<testcase name="[NONE][CKV_AWS_145] Ensure that S3 buckets are encrypted with KMS by default" classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf"/>
-		<testcase name="[NONE][CKV_AWS_145] Ensure that S3 buckets are encrypted with KMS by default" classname="/s3.tf.aws_s3_bucket.frontend_bucket" file="/s3.tf"/>
-		<testcase name="[NONE][CKV_AWS_145] Ensure that S3 buckets are encrypted with KMS by default" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf"/>
 		<testcase name="[NONE][CKV_AWS_374] Ensure AWS CloudFront web distribution has geo restriction enabled" classname="/cloudfront.tf.aws_cloudfront_distribution.frontend_distribution" file="/cloudfront.tf">
 			<failure type="failure" message="Ensure AWS CloudFront web distribution has geo restriction enabled">
 Resource: aws_cloudfront_distribution.frontend_distribution
@@ -498,6 +498,20 @@ Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aw
 		337 | }
 </failure>
 		</testcase>
+		<testcase name="[NONE][CKV2_AWS_65] Ensure access control lists for S3 buckets are disabled" classname="/frontend_s3.tf.aws_s3_bucket_ownership_controls.frontend_bucket_ownership" file="/frontend_s3.tf">
+			<failure type="failure" message="Ensure access control lists for S3 buckets are disabled">
+Resource: aws_s3_bucket_ownership_controls.frontend_bucket_ownership
+File: /frontend_s3.tf: 12-17
+Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-general-112
+
+		12 | resource &quot;aws_s3_bucket_ownership_controls&quot; &quot;frontend_bucket_ownership&quot; {
+		13 |   bucket = aws_s3_bucket.frontend_bucket.id
+		14 |   rule {
+		15 |     object_ownership = &quot;BucketOwnerPreferred&quot;
+		16 |   }
+		17 | }
+</failure>
+		</testcase>
 		<testcase name="[NONE][CKV2_AWS_62] Ensure S3 buckets should have event notifications enabled" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf">
 			<failure type="failure" message="Ensure S3 buckets should have event notifications enabled">
 Resource: aws_s3_bucket.frontend_bucket_replica
@@ -514,28 +528,6 @@ Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aw
 		378 |   }
 		379 | }
 </failure>
-		</testcase>
-		<testcase name="[NONE][CKV2_AWS_65] Ensure access control lists for S3 buckets are disabled" classname="/s3.tf.aws_s3_bucket_ownership_controls.frontend_bucket_ownership" file="/s3.tf">
-			<failure type="failure" message="Ensure access control lists for S3 buckets are disabled">
-Resource: aws_s3_bucket_ownership_controls.frontend_bucket_ownership
-File: /s3.tf: 12-17
-Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-general-112
-
-		12 | resource &quot;aws_s3_bucket_ownership_controls&quot; &quot;frontend_bucket_ownership&quot; {
-		13 |   bucket = aws_s3_bucket.frontend_bucket.id
-		14 |   rule {
-		15 |     object_ownership = &quot;BucketOwnerPreferred&quot;
-		16 |   }
-		17 | }
-</failure>
-		</testcase>
-		<testcase name="[NONE][CKV2_AWS_31] Ensure WAF2 has a Logging Configuration" classname="/waf.tf.aws_wafv2_web_acl.cloudfront_waf" file="/waf.tf">
-			<failure type="failure" message="Ensure WAF2 has a Logging Configuration">
-Resource: aws_wafv2_web_acl.cloudfront_waf
-File: /waf.tf: 2-114
-Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-logging-33
-
-		Code lines for this resource are too many. Please use IDE of your choice to review the file.</failure>
 		</testcase>
 		<testcase name="[NONE][CKV2_AWS_64] Ensure KMS key Policy is defined" classname="/s3_security.tf.aws_kms_key.s3_encryption_key" file="/s3_security.tf">
 			<failure type="failure" message="Ensure KMS key Policy is defined">
@@ -554,11 +546,11 @@ Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aw
 		10 | }
 </failure>
 		</testcase>
-		<testcase name="[NONE][CKV2_AWS_47] Ensure AWS CloudFront attached WAFv2 WebACL is configured with AMR for Log4j Vulnerability" classname="/cloudfront.tf.aws_cloudfront_distribution.frontend_distribution" file="/cloudfront.tf">
-			<failure type="failure" message="Ensure AWS CloudFront attached WAFv2 WebACL is configured with AMR for Log4j Vulnerability">
-Resource: aws_cloudfront_distribution.frontend_distribution
-File: /cloudfront.tf: 5-102
-Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-general-47
+		<testcase name="[NONE][CKV2_AWS_31] Ensure WAF2 has a Logging Configuration" classname="/waf.tf.aws_wafv2_web_acl.cloudfront_waf" file="/waf.tf">
+			<failure type="failure" message="Ensure WAF2 has a Logging Configuration">
+Resource: aws_wafv2_web_acl.cloudfront_waf
+File: /waf.tf: 2-114
+Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-logging-33
 
 		Code lines for this resource are too many. Please use IDE of your choice to review the file.</failure>
 		</testcase>
@@ -569,6 +561,31 @@ File: /cloudfront.tf: 5-102
 Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/bc-aws-networking-65
 
 		Code lines for this resource are too many. Please use IDE of your choice to review the file.</failure>
+		</testcase>
+		<testcase name="[NONE][CKV2_AWS_47] Ensure AWS CloudFront attached WAFv2 WebACL is configured with AMR for Log4j Vulnerability" classname="/cloudfront.tf.aws_cloudfront_distribution.frontend_distribution" file="/cloudfront.tf">
+			<failure type="failure" message="Ensure AWS CloudFront attached WAFv2 WebACL is configured with AMR for Log4j Vulnerability">
+Resource: aws_cloudfront_distribution.frontend_distribution
+File: /cloudfront.tf: 5-102
+Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-general-47
+
+		Code lines for this resource are too many. Please use IDE of your choice to review the file.</failure>
+		</testcase>
+		<testcase name="[NONE][CKV_AWS_18] Ensure the S3 bucket has access logging enabled" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf">
+			<failure type="failure" message="Ensure the S3 bucket has access logging enabled">
+Resource: aws_s3_bucket.frontend_bucket_replica
+File: /s3_security.tf: 371-379
+Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-13-enable-logging
+
+		371 | resource &quot;aws_s3_bucket&quot; &quot;frontend_bucket_replica&quot; {
+		372 |   provider = aws.replica
+		373 |   bucket   = &quot;leocorp-frontend-replica-${terraform.workspace}&quot;
+		374 | 
+		375 |   tags = {
+		376 |     Name        = &quot;Frontend Bucket Replica&quot;
+		377 |     Environment = terraform.workspace
+		378 |   }
+		379 | }
+</failure>
 		</testcase>
 		<testcase name="[NONE][CKV_AWS_144] Ensure that S3 bucket has cross-region replication enabled" classname="/S3.tf.aws_s3_bucket.demo_bucket" file="/S3.tf">
 			<failure type="failure" message="Ensure that S3 bucket has cross-region replication enabled">
@@ -615,23 +632,6 @@ Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aw
 		63 |     Environment = terraform.workspace
 		64 |   }
 		65 | }
-</failure>
-		</testcase>
-		<testcase name="[NONE][CKV_AWS_18] Ensure the S3 bucket has access logging enabled" classname="/s3_security.tf.aws_s3_bucket.frontend_bucket_replica" file="/s3_security.tf">
-			<failure type="failure" message="Ensure the S3 bucket has access logging enabled">
-Resource: aws_s3_bucket.frontend_bucket_replica
-File: /s3_security.tf: 371-379
-Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-13-enable-logging
-
-		371 | resource &quot;aws_s3_bucket&quot; &quot;frontend_bucket_replica&quot; {
-		372 |   provider = aws.replica
-		373 |   bucket   = &quot;leocorp-frontend-replica-${terraform.workspace}&quot;
-		374 | 
-		375 |   tags = {
-		376 |     Name        = &quot;Frontend Bucket Replica&quot;
-		377 |     Environment = terraform.workspace
-		378 |   }
-		379 | }
 </failure>
 		</testcase>
 	</testsuite>
