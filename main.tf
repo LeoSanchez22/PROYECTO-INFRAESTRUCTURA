@@ -13,3 +13,9 @@ terraform {
 provider "aws" {
   region = "us-east-1"  # Estandarizamos en us-east-1 para mantener consistencia con servicios como CloudFront
 }
+
+# Provider for replica region
+provider "aws" {
+  alias  = "replica"
+  region = "us-west-2" # Different region for disaster recovery
+}
