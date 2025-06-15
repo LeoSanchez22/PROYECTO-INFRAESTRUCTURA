@@ -113,11 +113,8 @@ resource "aws_wafv2_web_acl" "cloudfront_waf" {
   }
 }
 
-# Associate the WAF Web ACL with the CloudFront distribution
-resource "aws_wafv2_web_acl_association" "cloudfront_waf_association" {
-  resource_arn = aws_cloudfront_distribution.frontend_distribution.arn
-  web_acl_arn  = aws_wafv2_web_acl.cloudfront_waf.arn
-}
+# CloudFront WAF association is handled directly in the CloudFront distribution
+# through the web_acl_id parameter and does not require a separate association resource
 
 # Outputs
 output "waf_web_acl_id" {
