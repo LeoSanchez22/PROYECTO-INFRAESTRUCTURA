@@ -27,7 +27,6 @@ terraform.rc
 awscliv2.zip
 
 # Lambda deployment packages
-lambda_function.zip
 
 # Local environment files
 .env
