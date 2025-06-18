@@ -12,7 +12,7 @@ resource "aws_s3_bucket" "frontend_bucket" {
 resource "aws_s3_bucket_ownership_controls" "frontend_bucket_ownership" {
   bucket = aws_s3_bucket.frontend_bucket.id
   rule {
-    object_ownership = "BucketOwnerPreferred"
+    object_ownership = "BucketOwnerEnforced"
   }
 }
 
@@ -54,5 +54,30 @@ resource "aws_s3_bucket_website_configuration" "frontend_bucket_website" {
   error_document {
     key = "index.html"
   }
+}
+
+# Event notifications for frontend bucket (additional configuration)
+resource "aws_s3_bucket_notification" "frontend_bucket_events" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+
+  topic {
+    topic_arn     = aws_sns_topic.s3_event_notification.arn
+    events        = ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
+    filter_suffix = ".html"
+  }
+
+  topic {
+    topic_arn     = aws_sns_topic.s3_event_notification.arn
+    events        = ["s3:ObjectCreated:*"]
+    filter_suffix = ".js"
+  }
+
+  topic {
+    topic_arn     = aws_sns_topic.s3_event_notification.arn
+    events        = ["s3:ObjectCreated:*"]
+    filter_suffix = ".css"
+  }
+
+  depends_on = [aws_sns_topic_policy.s3_notification_policy]
 }
 

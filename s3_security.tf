@@ -11,7 +11,13 @@ resource "aws_kms_key" "s3_encryption_key" {
 
 # Create an SNS topic for S3 event notifications
 resource "aws_sns_topic" "s3_event_notification" {
-  name = "s3-event-notification-topic"
+  name              = "s3-event-notification-topic"
+  kms_master_key_id = aws_kms_key.s3_encryption_key.arn
+  
+  tags = {
+    Name        = "S3 Event Notification Topic"
+    Environment = terraform.workspace
+  }
 }
 
 # SNS topic policy to allow S3 to publish messages
@@ -255,6 +261,18 @@ resource "aws_s3_bucket_lifecycle_configuration" "demo_bucket_lifecycle" {
       noncurrent_days = 365
     }
   }
+
+  rule {
+    id     = "abort-incomplete-multipart-uploads"
+    status = "Enabled"
+    filter {
+      prefix = ""
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
 }
 
 # Event notifications for demo bucket
@@ -336,6 +354,18 @@ resource "aws_s3_bucket_lifecycle_configuration" "frontend_bucket_lifecycle" {
       noncurrent_days = 90
     }
   }
+
+  rule {
+    id     = "abort-incomplete-multipart-uploads"
+    status = "Enabled"
+    filter {
+      prefix = ""
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
 }
 
 # Event notifications for frontend bucket
@@ -387,7 +417,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "replica_bucket_en
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.s3_encryption_key.arn
+      kms_master_key_id = aws_kms_key.replica_encryption_key.arn
       sse_algorithm     = "aws:kms"
     }
     bucket_key_enabled = true
@@ -443,6 +473,68 @@ resource "aws_s3_bucket_lifecycle_configuration" "replica_bucket_lifecycle" {
       noncurrent_days = 90
     }
   }
+}
+
+# SNS topic for replica bucket events (in replica region)
+resource "aws_sns_topic" "replica_s3_event_notification" {
+  provider          = aws.replica
+  name              = "replica-s3-event-notification-topic"
+  kms_master_key_id = aws_kms_key.replica_encryption_key.arn
+  
+  tags = {
+    Name        = "Replica S3 Event Notification Topic"
+    Environment = terraform.workspace
+  }
+}
+
+# KMS key for replica region
+resource "aws_kms_key" "replica_encryption_key" {
+  provider                = aws.replica
+  description             = "KMS key for S3 bucket encryption in replica region"
+  deletion_window_in_days = 10
+  enable_key_rotation     = true
+
+  tags = {
+    Name = "replica-s3-encryption-key"
+  }
+}
+
+# SNS topic policy for replica
+resource "aws_sns_topic_policy" "replica_s3_notification_policy" {
+  provider = aws.replica
+  arn      = aws_sns_topic.replica_s3_event_notification.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "s3.amazonaws.com"
+        }
+        Action = "SNS:Publish"
+        Resource = aws_sns_topic.replica_s3_event_notification.arn
+        Condition = {
+          ArnLike = {
+            "aws:SourceArn" = aws_s3_bucket.frontend_bucket_replica.arn
+          }
+        }
+      }
+    ]
+  })
+}
+
+# Event notifications for replica bucket
+resource "aws_s3_bucket_notification" "replica_bucket_notification" {
+  provider = aws.replica
+  bucket   = aws_s3_bucket.frontend_bucket_replica.id
+
+  topic {
+    topic_arn     = aws_sns_topic.replica_s3_event_notification.arn
+    events        = ["s3:ObjectCreated:*", "s3:ObjectRemoved:*", "s3:Replication:*"]
+  }
+
+  depends_on = [aws_sns_topic_policy.replica_s3_notification_policy]
 }
 
 # IAM role for replication
@@ -505,7 +597,3 @@ resource "aws_iam_role_policy_attachment" "replication_attachment" {
   role       = aws_iam_role.replication_role.name
   policy_arn = aws_iam_policy.replication_policy.arn
 }
-
-# NOTE: Provider for replica region is now defined in provider.tf
-# This provider definition has been moved to avoid duplicates and conflicts
-
