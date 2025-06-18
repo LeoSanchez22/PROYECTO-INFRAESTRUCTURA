@@ -7,9 +7,16 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
   is_ipv6_enabled     = true
   comment             = "Distribution for frontend application with security enhancements"
   default_root_object = "index.html"
-  
-  # Associate with AWS WAF Web ACL
   web_acl_id          = aws_wafv2_web_acl.cloudfront_waf.arn
+  price_class         = "PriceClass_100"
+  
+  # Access Logging Configuration
+  # Commenting out logging temporarily until we fix the ACL issue
+  # logging_config {
+  #   include_cookies = false
+  #   bucket          = aws_s3_bucket.cloudfront_logs.bucket_domain_name
+  #   prefix          = "cloudfront/"
+  # }
   
   # Origin configuration (S3 bucket assumed, adjust as needed)
   origin {
@@ -60,20 +67,12 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
   # - Enforces TLS 1.2 or higher
   # - Implements SNI for multiple certificates support
   viewer_certificate {
-    acm_certificate_arn      = local.certificate_arn
-    ssl_support_method       = "sni-only"
-    minimum_protocol_version = "TLSv1.2_2021"
-    # Fallback to CloudFront default certificate if no custom certificate is provided
-    cloudfront_default_certificate = local.certificate_arn == null ? true : false
-  }
-  
-  # Access Logging Configuration
-  # - Logs stored in dedicated S3 bucket with encryption
-  # - Lifecycle policies manage log retention
-  logging_config {
-    include_cookies = false
-    bucket          = aws_s3_bucket.cloudfront_logs.bucket_domain_name
-    prefix          = "cloudfront/"
+    # Use CloudFront default certificate since we're skipping ACM
+    cloudfront_default_certificate = true
+    # Comment out these lines until we have a valid certificate
+    # acm_certificate_arn      = local.certificate_arn
+    # ssl_support_method       = "sni-only"
+    # minimum_protocol_version = "TLSv1.2_2021"
   }
   
   # Optional: Custom error responses
@@ -90,9 +89,6 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
     response_page_path    = "/index.html"
     error_caching_min_ttl = 10
   }
-  
-  # Add price class
-  price_class = "PriceClass_100"
   
   # Add tags
   tags = {

@@ -1,3 +1,20 @@
+# CloudFront logs bucket ownership controls (required for CloudFront logging)
+resource "aws_s3_bucket_ownership_controls" "cloudfront_logs_bucket_ownership" {
+  bucket = aws_s3_bucket.cloudfront_logs.id
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+# Enable ACLs for CloudFront logs bucket
+resource "aws_s3_bucket_acl" "cloudfront_logs_bucket_acl" {
+  depends_on = [aws_s3_bucket_ownership_controls.cloudfront_logs_bucket_ownership]
+  
+  bucket = aws_s3_bucket.cloudfront_logs.id
+  acl    = "log-delivery-write"
+}
+
 # S3 Bucket for CloudFront Access Logs
 resource "aws_s3_bucket" "cloudfront_logs" {
   bucket = "cloudfront-access-logs-${data.aws_caller_identity.current.account_id}"

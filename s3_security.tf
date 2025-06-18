@@ -62,7 +62,8 @@ resource "aws_kms_alias" "s3_encryption_key_alias" {
 
 # Logging bucket for S3 access logs
 resource "aws_s3_bucket" "s3_logs_bucket" {
-  bucket = "s3-access-logs-${terraform.workspace}"
+  # Use the default provider (us-east-1) instead of eu_west_1
+  bucket = "${var.bucket_name_prefix}-logs-${data.aws_caller_identity.current.account_id}-${formatdate("YYYYMMDDhhmmss", timestamp())}"
 
   tags = {
     Name        = "S3 Access Logs Bucket"
@@ -113,6 +114,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "logs_bucket_encry
 resource "aws_s3_bucket_lifecycle_configuration" "logs_bucket_lifecycle" {
   bucket = aws_s3_bucket.s3_logs_bucket.id
 
+  # Rule for log retention
   rule {
     id = "log-retention"
     status = "Enabled"
@@ -134,12 +136,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "logs_bucket_lifecycle" {
       days = 365 # 1 year retention
     }
   }
-}
 
-# Add abort incomplete multipart uploads to logs bucket lifecycle
-resource "aws_s3_bucket_lifecycle_configuration" "logs_bucket_lifecycle_abort" {
-  bucket = aws_s3_bucket.s3_logs_bucket.id
-
+  # Rule for aborting incomplete multipart uploads
   rule {
     id     = "abort-incomplete-multipart-uploads"
     status = "Enabled"
@@ -208,6 +206,8 @@ resource "aws_s3_bucket_logging" "demo_bucket_logging" {
 
   target_bucket = aws_s3_bucket.s3_logs_bucket.id
   target_prefix = "demo-bucket-logs/"
+  
+  depends_on = [aws_s3_bucket.s3_logs_bucket]
 }
 
 # Lifecycle configuration for demo_bucket
@@ -317,6 +317,8 @@ resource "aws_s3_bucket_logging" "frontend_bucket_logging" {
 
   target_bucket = aws_s3_bucket.s3_logs_bucket.id
   target_prefix = "frontend-bucket-logs/"
+  
+  depends_on = [aws_s3_bucket.s3_logs_bucket]
 }
 
 # Lifecycle configuration for frontend_bucket
@@ -400,7 +402,7 @@ resource "aws_s3_bucket_replication_configuration" "frontend_bucket_replication"
 # Replica bucket in another region
 resource "aws_s3_bucket" "frontend_bucket_replica" {
   provider = aws.replica
-  bucket   = "leocorp-frontend-replica-${terraform.workspace}"
+  bucket   = "${var.bucket_name_prefix}-frontend-replica-${data.aws_caller_identity.current.account_id}"
 
   tags = {
     Name        = "Frontend Bucket Replica"
@@ -595,5 +597,3 @@ resource "aws_iam_role_policy_attachment" "replication_attachment" {
   role       = aws_iam_role.replication_role.name
   policy_arn = aws_iam_policy.replication_policy.arn
 }
-
-
