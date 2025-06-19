@@ -18,7 +18,7 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
   #   prefix          = "cloudfront/"
   # }
   
-  # Origin configuration (S3 bucket assumed, adjust as needed)
+  # Origin configuration for S3 bucket with OAI
   origin {
     domain_name = aws_s3_bucket.frontend_bucket.bucket_regional_domain_name
     origin_id   = "S3-frontend"
@@ -35,8 +35,8 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
     target_origin_id = "S3-frontend"
     
     forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Referer", "Origin"]
+      query_string = false
+      headers      = []
       cookies {
         forward = "none"
       }
@@ -46,6 +46,7 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
+    compress               = true
     
     # Optional - Lambda function association for authentication
     # lambda_function_association {
@@ -100,6 +101,27 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
 # Origin Access Identity for CloudFront
 resource "aws_cloudfront_origin_access_identity" "oai" {
   comment = "OAI for frontend website"
+}
+
+# CloudFront Cache Policy
+resource "aws_cloudfront_cache_policy" "frontend_cache_policy" {
+  name        = "frontend-cache-policy"
+  comment     = "Cache policy for frontend static assets"
+  default_ttl = 86400
+  max_ttl     = 31536000
+  min_ttl     = 1
+  
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "none"
+    }
+    headers_config {
+      header_behavior = "none"
+    }
+    query_strings_config {
+      query_string_behavior = "none"
+    }
+  }
 }
 
 # Outputs

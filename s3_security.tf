@@ -289,18 +289,8 @@ resource "aws_s3_bucket_notification" "demo_bucket_notification" {
 
 # ---------------- FRONTEND BUCKET SECURITY CONFIGURATIONS ----------------
 
-# Server-side encryption for frontend_bucket
-resource "aws_s3_bucket_server_side_encryption_configuration" "frontend_bucket_encryption" {
-  bucket = aws_s3_bucket.frontend_bucket.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.s3_encryption_key.arn
-      sse_algorithm     = "aws:kms"
-    }
-    bucket_key_enabled = true
-  }
-}
+# Server-side encryption for frontend_bucket is now defined in frontend_s3.tf
+# This block has been removed to avoid duplication
 
 # Versioning for frontend_bucket
 resource "aws_s3_bucket_versioning" "frontend_bucket_versioning" {

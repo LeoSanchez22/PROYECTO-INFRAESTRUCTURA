@@ -184,8 +184,6 @@ resource "aws_s3_bucket_notification" "cloudfront_logs_notification" {
   depends_on = [aws_sns_topic_policy.s3_notification_policy]
 }
 
-# AWS Caller Identity data source
-data "aws_caller_identity" "current" {}
 
 # Output for the logs bucket
 output "cloudfront_logs_bucket" {
