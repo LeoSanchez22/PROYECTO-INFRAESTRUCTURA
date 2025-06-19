@@ -1,0 +1,27 @@
+{
+  "name": "academic-schedule-generator",
+  "version": "1.0.0",
+  "description": "Lambda function for automatic academic schedule generation",
+  "main": "index.js",
+  "scripts": {
+    "install-deps": "npm install",
+    "build": "rm -rf node_modules && npm install --production && mkdir -p dist && rm -f dist/lambda_function.zip && zip -r dist/lambda_function.zip index.js node_modules package.json",
+    "deploy": "npm run build && terraform apply",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "schedule",
+    "academic",
+    "selenium"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1402.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {}
+}
+

@@ -50,9 +50,3 @@ provider "aws" {
     }
   }
 }
-
-# Provider for replica region
-provider "aws" {
-  alias  = "replica"
-  region = "us-west-2" # Different region for disaster recovery
-}

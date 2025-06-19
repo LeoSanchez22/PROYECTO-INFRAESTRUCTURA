@@ -43,6 +43,48 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = aws_iam_policy.lambda_logging.arn
 }
 
+# IAM Policy for S3 and DynamoDB access
+resource "aws_iam_policy" "lambda_storage_access" {
+  name        = "lambda_storage_access_policy"
+  description = "IAM policy for Lambda to access S3 and DynamoDB"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket"
+        ]
+        Effect = "Allow"
+        Resource = [
+          aws_s3_bucket.schedule_files.arn,
+          "${aws_s3_bucket.schedule_files.arn}/*"
+        ]
+      },
+      {
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:Query"
+        ]
+        Effect = "Allow"
+        Resource = [
+          aws_dynamodb_table.schedule_history.arn,
+          "${aws_dynamodb_table.schedule_history.arn}/index/*"
+        ]
+      }
+    ]
+  })
+}
+
+# Attach S3 and DynamoDB IAM policy to role
+resource "aws_iam_role_policy_attachment" "lambda_storage" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.lambda_storage_access.arn
+}
+
 # CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
   name              = "/aws/lambda/${aws_lambda_function.my_lambda.function_name}"
@@ -54,9 +96,9 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 # Lambda Function
 resource "aws_lambda_function" "my_lambda" {
   function_name = "my-lambda-function"
-  # Replace with your code package location
-  filename         = "lambda_function.zip" # Create this file or use S3 bucket
-  source_code_hash = filebase64sha256("lambda_function.zip")
+  # Path to the deployment package
+  filename         = "dist/lambda_function.zip"
+  source_code_hash = filebase64sha256("dist/lambda_function.zip")
   
   # Replace with your handler and runtime as needed
   handler = "index.handler"
@@ -67,12 +109,14 @@ resource "aws_lambda_function" "my_lambda" {
   environment {
     variables = {
       ENVIRONMENT = "production"
+      S3_BUCKET_NAME = aws_s3_bucket.schedule_files.id
+      DYNAMODB_TABLE = aws_dynamodb_table.schedule_history.name
     }
   }
   
   # Configure timeout and memory
-  timeout     = 30
-  memory_size = 128
+  timeout     = 60
+  memory_size = 256
 }
 
 # CloudWatch Metric Alarm for Lambda Errors
