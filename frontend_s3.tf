@@ -8,16 +8,33 @@ resource "aws_s3_bucket" "frontend_bucket" {
   }
 }
 
+# S3 bucket versioning
+resource "aws_s3_bucket_versioning" "frontend_bucket_versioning" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# S3 bucket access logging
+resource "aws_s3_bucket_logging" "frontend_bucket_logging" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+
+  target_bucket = aws_s3_bucket.s3_logs_bucket.id
+  target_prefix = "access-logs/frontend-bucket/"
+}
+
 # Get the current AWS account ID
 data "aws_caller_identity" "current" {}
 
-# Configure server-side encryption for S3 bucket using Amazon S3-managed keys (SSE-S3)
+# Configure server-side encryption for S3 bucket using KMS
 resource "aws_s3_bucket_server_side_encryption_configuration" "frontend_bucket_encryption" {
   bucket = aws_s3_bucket.frontend_bucket.id
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      kms_master_key_id = aws_kms_key.s3_encryption_key.arn
+      sse_algorithm     = "aws:kms"
     }
     bucket_key_enabled = true
   }

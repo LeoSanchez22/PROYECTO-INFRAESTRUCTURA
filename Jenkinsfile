@@ -85,16 +85,16 @@ pipeline {
                 // Create results directory with proper permissions
                 sh 'mkdir -p results'
                 
-                // Run Checkov with simpler command focused on JUnit output
+                // Run Checkov with the exact command specified
                 sh '''
                     echo "Starting Checkov security scan..."
                     
-                    # Basic Checkov command that focuses on generating proper JUnit XML
+                    # Exact command as requested - this will terminate automatically
                     docker run --rm -v $(pwd):/app --workdir /app bridgecrew/checkov \
                         --directory /app \
-                        -o junitxml \
-                        --output-file-path results.xml \
-                        --soft-fail
+                        --output junitxml \
+                        --output-file-path /app/results.xml \
+                        --quiet
                     
                     # Verify that the XML file was created successfully
                     if [ -f "results.xml" ]; then

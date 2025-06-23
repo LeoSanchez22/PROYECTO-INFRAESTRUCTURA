@@ -11,12 +11,11 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
   price_class         = "PriceClass_100"
   
   # Access Logging Configuration
-  # Commenting out logging temporarily until we fix the ACL issue
-  # logging_config {
-  #   include_cookies = false
-  #   bucket          = aws_s3_bucket.cloudfront_logs.bucket_domain_name
-  #   prefix          = "cloudfront/"
-  # }
+  logging_config {
+    include_cookies = false
+    bucket          = aws_s3_bucket.cloudfront_logs.bucket_domain_name
+    prefix          = "cloudfront-access-logs/"
+  }
   
   # Origin configuration for S3 bucket with OAI
   origin {
@@ -56,10 +55,11 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
     # }
   }
   
-  # Restrictions
+  # Geographic restrictions for security
   restrictions {
     geo_restriction {
-      restriction_type = "none"
+      restriction_type = "whitelist"
+      locations        = ["US", "CA", "GB", "DE", "FR", "IT", "ES", "NL", "AU", "JP"]  # Allow only certain countries
     }
   }
   
@@ -133,8 +133,7 @@ output "cloudfront_domain_name" {
   value = aws_cloudfront_distribution.frontend_distribution.domain_name
 }
 
-# Current AWS region data source
-data "aws_region" "current" {}
+# Note: aws_region data source is defined in api_gateway.tf
 
 # Note: This output assumes Cognito User Pool has a domain configured.
 # If not, you will need to add a domain to your Cognito User Pool configuration.

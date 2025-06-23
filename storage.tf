@@ -22,14 +22,65 @@ resource "aws_s3_bucket_versioning" "schedule_versioning" {
   }
 }
 
-# Enable server-side encryption for the S3 bucket
+# S3 bucket access logging
+resource "aws_s3_bucket_logging" "schedule_bucket_logging" {
+  bucket = aws_s3_bucket.schedule_files.id
+
+  target_bucket = aws_s3_bucket.s3_logs_bucket.id
+  target_prefix = "access-logs/schedule-files/"
+}
+
+# S3 bucket lifecycle configuration
+resource "aws_s3_bucket_lifecycle_configuration" "schedule_bucket_lifecycle" {
+  bucket = aws_s3_bucket.schedule_files.id
+
+  rule {
+    id     = "delete_incomplete_multipart_uploads"
+    status = "Enabled"
+
+    filter {
+      prefix = ""
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+
+  rule {
+    id     = "transition_old_versions"
+    status = "Enabled"
+
+    filter {
+      prefix = ""
+    }
+
+    noncurrent_version_transition {
+      noncurrent_days = 30
+      storage_class   = "STANDARD_IA"
+    }
+
+    noncurrent_version_transition {
+      noncurrent_days = 60
+      storage_class   = "GLACIER"
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 365
+    }
+  }
+}
+
+# Enable server-side encryption for the S3 bucket using KMS
 resource "aws_s3_bucket_server_side_encryption_configuration" "schedule_encryption" {
   bucket = aws_s3_bucket.schedule_files.id
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      kms_master_key_id = aws_kms_key.s3_encryption_key.arn
+      sse_algorithm     = "aws:kms"
     }
+    bucket_key_enabled = true
   }
 }
 
@@ -59,7 +110,9 @@ resource "aws_s3_bucket_public_access_block" "schedule_public_access_block" {
 # DynamoDB table for storing schedule generation history
 resource "aws_dynamodb_table" "schedule_history" {
   name         = "ScheduleGenerationHistory"
-  billing_mode = "PAY_PER_REQUEST" # On-demand capacity
+  billing_mode = "PROVISIONED"  # Change to provisioned for autoscaling
+  read_capacity  = 5
+  write_capacity = 5
   hash_key     = "ExecutionId"
   range_key    = "Timestamp"
 
@@ -83,6 +136,8 @@ resource "aws_dynamodb_table" "schedule_history" {
     hash_key           = "UserId"
     range_key          = "Timestamp"
     projection_type    = "ALL"
+    read_capacity      = 5
+    write_capacity     = 5
   }
 
   point_in_time_recovery {
@@ -90,12 +145,63 @@ resource "aws_dynamodb_table" "schedule_history" {
   }
 
   server_side_encryption {
-    enabled = true
+    enabled     = true
+    kms_key_arn = aws_kms_key.dynamodb_key.arn  # Use customer-managed KMS key
   }
 
   tags = {
     Name        = "ScheduleHistoryTable"
     Description = "Stores history of schedule generation executions"
+  }
+}
+
+# DynamoDB Autoscaling for Read Capacity
+resource "aws_appautoscaling_target" "dynamodb_table_read_target" {
+  max_capacity       = 100
+  min_capacity       = 5
+  resource_id        = "table/${aws_dynamodb_table.schedule_history.name}"
+  scalable_dimension = "dynamodb:table:ReadCapacityUnits"
+  service_namespace  = "dynamodb"
+}
+
+# DynamoDB Autoscaling for Write Capacity
+resource "aws_appautoscaling_target" "dynamodb_table_write_target" {
+  max_capacity       = 100
+  min_capacity       = 5
+  resource_id        = "table/${aws_dynamodb_table.schedule_history.name}"
+  scalable_dimension = "dynamodb:table:WriteCapacityUnits"
+  service_namespace  = "dynamodb"
+}
+
+# DynamoDB Autoscaling Policy for Read Capacity
+resource "aws_appautoscaling_policy" "dynamodb_table_read_policy" {
+  name               = "DynamoDBReadCapacityUtilization:${aws_appautoscaling_target.dynamodb_table_read_target.resource_id}"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.dynamodb_table_read_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.dynamodb_table_read_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.dynamodb_table_read_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "DynamoDBReadCapacityUtilization"
+    }
+    target_value = 70.0
+  }
+}
+
+# DynamoDB Autoscaling Policy for Write Capacity
+resource "aws_appautoscaling_policy" "dynamodb_table_write_policy" {
+  name               = "DynamoDBWriteCapacityUtilization:${aws_appautoscaling_target.dynamodb_table_write_target.resource_id}"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.dynamodb_table_write_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.dynamodb_table_write_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.dynamodb_table_write_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "DynamoDBWriteCapacityUtilization"
+    }
+    target_value = 70.0
   }
 }
 

@@ -88,9 +88,30 @@ resource "aws_iam_role_policy_attachment" "lambda_storage" {
 # CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
   name              = "/aws/lambda/${aws_lambda_function.my_lambda.function_name}"
-  retention_in_days = 14
+  retention_in_days = 365  # 1 year retention for compliance
+  
+  # Encrypt with KMS for security
+  kms_key_id = aws_kms_key.logs_key.arn
+  
+  tags = {
+    Name        = "Lambda Function Logs"
+    Environment = "production"
+  }
+  
   # Depends on the Lambda function to ensure proper naming
   depends_on = [aws_lambda_function.my_lambda]
+}
+
+# Dead Letter Queue for Lambda
+resource "aws_sqs_queue" "lambda_dlq" {
+  name = "lambda-dlq"
+  
+  # Encrypt SQS queue
+  kms_master_key_id = aws_kms_key.lambda_key.arn
+  
+  tags = {
+    Name = "Lambda Dead Letter Queue"
+  }
 }
 
 # Lambda Function
@@ -102,21 +123,42 @@ resource "aws_lambda_function" "my_lambda" {
   
   # Replace with your handler and runtime as needed
   handler = "index.handler"
-  runtime = "nodejs18.x"
+  runtime = "nodejs20.x"  # Updated to non-deprecated runtime
   
   role = aws_iam_role.lambda_role.arn
   
+  # Enable X-Ray tracing
+  tracing_config {
+    mode = "Active"
+  }
+  
+  # Set concurrent execution limit
+  reserved_concurrent_executions = 100
+  
+  # Configure Dead Letter Queue
+  dead_letter_config {
+    target_arn = aws_sqs_queue.lambda_dlq.arn
+  }
+  
   environment {
     variables = {
-      ENVIRONMENT = "production"
+      ENVIRONMENT    = "production"
       S3_BUCKET_NAME = aws_s3_bucket.schedule_files.id
       DYNAMODB_TABLE = aws_dynamodb_table.schedule_history.name
     }
   }
   
+  # Encrypt environment variables with KMS
+  kms_key_arn = aws_kms_key.lambda_key.arn
+  
   # Configure timeout and memory
   timeout     = 60
   memory_size = 256
+  
+  tags = {
+    Name        = "Academic Schedule Lambda"
+    Environment = "production"
+  }
 }
 
 # CloudWatch Metric Alarm for Lambda Errors

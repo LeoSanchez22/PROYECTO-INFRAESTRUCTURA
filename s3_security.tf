@@ -178,102 +178,106 @@ resource "aws_s3_bucket_public_access_block" "demo_bucket_access_secure" {
   # This will override the existing resource with the same name in S3.tf
 }
 
-# Server-side encryption for demo_bucket
-resource "aws_s3_bucket_server_side_encryption_configuration" "demo_bucket_encryption" {
-  bucket = aws_s3_bucket.demo_bucket.id
+# Server-side encryption for demo_bucket - COMENTADO PARA EVITAR DUPLICADO
+# Ya está definido en S3.tf
+# resource "aws_s3_bucket_server_side_encryption_configuration" "demo_bucket_encryption" {
+#   bucket = aws_s3_bucket.demo_bucket.id
+#
+#   rule {
+#     apply_server_side_encryption_by_default {
+#       kms_master_key_id = aws_kms_key.s3_encryption_key.arn
+#       sse_algorithm     = "aws:kms"
+#     }
+#     bucket_key_enabled = true
+#   }
+# }
 
-  rule {
-    apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.s3_encryption_key.arn
-      sse_algorithm     = "aws:kms"
-    }
-    bucket_key_enabled = true
-  }
-}
+# Versioning for demo_bucket - COMENTADO PARA EVITAR DUPLICADO
+# Ya está definido en S3.tf
+# resource "aws_s3_bucket_versioning" "demo_bucket_versioning" {
+#   bucket = aws_s3_bucket.demo_bucket.id
+#   
+#   versioning_configuration {
+#     status = "Enabled"
+#   }
+# }
 
-# Versioning for demo_bucket
-resource "aws_s3_bucket_versioning" "demo_bucket_versioning" {
-  bucket = aws_s3_bucket.demo_bucket.id
-  
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
+# Access logging for demo_bucket - COMENTADO PARA EVITAR DUPLICADO
+# Ya está definido en S3.tf
+# resource "aws_s3_bucket_logging" "demo_bucket_logging" {
+#   bucket = aws_s3_bucket.demo_bucket.id
+#
+#   target_bucket = aws_s3_bucket.s3_logs_bucket.id
+#   target_prefix = "demo-bucket-logs/"
+#   
+#   depends_on = [aws_s3_bucket.s3_logs_bucket]
+# }
 
-# Access logging for demo_bucket
-resource "aws_s3_bucket_logging" "demo_bucket_logging" {
-  bucket = aws_s3_bucket.demo_bucket.id
-
-  target_bucket = aws_s3_bucket.s3_logs_bucket.id
-  target_prefix = "demo-bucket-logs/"
-  
-  depends_on = [aws_s3_bucket.s3_logs_bucket]
-}
-
-# Lifecycle configuration for demo_bucket
-resource "aws_s3_bucket_lifecycle_configuration" "demo_bucket_lifecycle" {
-  bucket = aws_s3_bucket.demo_bucket.id
-
-  rule {
-    id     = "transition-to-infrequent-access"
-    status = "Enabled"
-    filter {
-      prefix = ""
-    }
-
-    transition {
-      days          = 30
-      storage_class = "STANDARD_IA"
-    }
-
-    noncurrent_version_transition {
-      noncurrent_days = 30
-      storage_class   = "STANDARD_IA"
-    }
-  }
-
-  rule {
-    id     = "archive-old-objects"
-    status = "Enabled"
-    filter {
-      prefix = ""
-    }
-
-    transition {
-      days          = 90
-      storage_class = "GLACIER"
-    }
-
-    noncurrent_version_transition {
-      noncurrent_days = 90
-      storage_class   = "GLACIER"
-    }
-  }
-
-  rule {
-    id     = "expire-old-versions"
-    status = "Enabled"
-    filter {
-      prefix = ""
-    }
-
-    noncurrent_version_expiration {
-      noncurrent_days = 365
-    }
-  }
-
-  rule {
-    id     = "abort-incomplete-multipart-uploads"
-    status = "Enabled"
-    filter {
-      prefix = ""
-    }
-
-    abort_incomplete_multipart_upload {
-      days_after_initiation = 7
-    }
-  }
-}
+# Lifecycle configuration for demo_bucket - COMENTADO PARA EVITAR DUPLICADO
+# Ya está definido en S3.tf
+# resource "aws_s3_bucket_lifecycle_configuration" "demo_bucket_lifecycle" {
+#   bucket = aws_s3_bucket.demo_bucket.id
+#
+#   rule {
+#     id     = "transition-to-infrequent-access"
+#     status = "Enabled"
+#     filter {
+#       prefix = ""
+#     }
+#
+#     transition {
+#       days          = 30
+#       storage_class = "STANDARD_IA"
+#     }
+#
+#     noncurrent_version_transition {
+#       noncurrent_days = 30
+#       storage_class   = "STANDARD_IA"
+#     }
+#   }
+#
+#   rule {
+#     id     = "archive-old-objects"
+#     status = "Enabled"
+#     filter {
+#       prefix = ""
+#     }
+#
+#     transition {
+#       days          = 90
+#       storage_class = "GLACIER"
+#     }
+#
+#     noncurrent_version_transition {
+#       noncurrent_days = 90
+#       storage_class   = "GLACIER"
+#     }
+#   }
+#
+#   rule {
+#     id     = "expire-old-versions"
+#     status = "Enabled"
+#     filter {
+#       prefix = ""
+#     }
+#
+#     noncurrent_version_expiration {
+#       noncurrent_days = 365
+#     }
+#   }
+#
+#   rule {
+#     id     = "abort-incomplete-multipart-uploads"
+#     status = "Enabled"
+#     filter {
+#       prefix = ""
+#     }
+#
+#     abort_incomplete_multipart_upload {
+#       days_after_initiation = 7
+#     }
+#   }
+# }
 
 # Event notifications for demo bucket
 resource "aws_s3_bucket_notification" "demo_bucket_notification" {
@@ -292,24 +296,26 @@ resource "aws_s3_bucket_notification" "demo_bucket_notification" {
 # Server-side encryption for frontend_bucket is now defined in frontend_s3.tf
 # This block has been removed to avoid duplication
 
-# Versioning for frontend_bucket
-resource "aws_s3_bucket_versioning" "frontend_bucket_versioning" {
-  bucket = aws_s3_bucket.frontend_bucket.id
-  
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
+# Versioning for frontend_bucket - COMENTADO PARA EVITAR DUPLICADO
+# Ya está definido en frontend_s3.tf
+# resource "aws_s3_bucket_versioning" "frontend_bucket_versioning" {
+#   bucket = aws_s3_bucket.frontend_bucket.id
+#   
+#   versioning_configuration {
+#     status = "Enabled"
+#   }
+# }
 
-# Access logging for frontend_bucket
-resource "aws_s3_bucket_logging" "frontend_bucket_logging" {
-  bucket = aws_s3_bucket.frontend_bucket.id
-
-  target_bucket = aws_s3_bucket.s3_logs_bucket.id
-  target_prefix = "frontend-bucket-logs/"
-  
-  depends_on = [aws_s3_bucket.s3_logs_bucket]
-}
+# Access logging for frontend_bucket - COMENTADO PARA EVITAR DUPLICADO
+# Ya está definido en frontend_s3.tf
+# resource "aws_s3_bucket_logging" "frontend_bucket_logging" {
+#   bucket = aws_s3_bucket.frontend_bucket.id
+#
+#   target_bucket = aws_s3_bucket.s3_logs_bucket.id
+#   target_prefix = "frontend-bucket-logs/"
+#   
+#   depends_on = [aws_s3_bucket.s3_logs_bucket]
+# }
 
 # Lifecycle configuration for frontend_bucket
 resource "aws_s3_bucket_lifecycle_configuration" "frontend_bucket_lifecycle" {
@@ -372,7 +378,7 @@ resource "aws_s3_bucket_notification" "frontend_bucket_notification" {
 
 # Cross-region replication for disaster recovery (optional but recommended)
 resource "aws_s3_bucket_replication_configuration" "frontend_bucket_replication" {
-  # Depends on bucket versioning
+  # Depends on bucket versioning (defined in frontend_s3.tf)
   depends_on = [aws_s3_bucket_versioning.frontend_bucket_versioning]
 
   role   = aws_iam_role.replication_role.arn

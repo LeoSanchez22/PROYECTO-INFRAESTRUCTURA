@@ -1,5 +1,8 @@
 ### API Gateway Configuration ###
 
+# Get current AWS region
+data "aws_region" "current" {}
+
 # Create API Gateway REST API
 resource "aws_api_gateway_rest_api" "api" {
   name        = "lambda-api-gateway"
@@ -8,6 +11,51 @@ resource "aws_api_gateway_rest_api" "api" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Create Cognito User Pool for API authentication
+resource "aws_cognito_user_pool" "api_user_pool" {
+  name = "api-user-pool"
+
+  password_policy {
+    minimum_length    = 8
+    require_lowercase = true
+    require_numbers   = true
+    require_symbols   = true
+    require_uppercase = true
+  }
+
+  auto_verified_attributes = ["email"]
+
+  tags = {
+    Name = "API User Pool"
+  }
+}
+
+# Create Cognito User Pool Client
+resource "aws_cognito_user_pool_client" "api_user_pool_client" {
+  name         = "api-user-pool-client"
+  user_pool_id = aws_cognito_user_pool.api_user_pool.id
+
+  explicit_auth_flows = [
+    "ALLOW_USER_PASSWORD_AUTH",
+    "ALLOW_REFRESH_TOKEN_AUTH"
+  ]
+
+  generate_secret = false
+}
+
+# Create API Gateway Authorizer
+resource "aws_api_gateway_authorizer" "my_cognito_authorizer" {
+  name                   = "cognito-authorizer"
+  rest_api_id            = aws_api_gateway_rest_api.api.id
+  type                   = "COGNITO_USER_POOLS"
+  provider_arns          = [aws_cognito_user_pool.api_user_pool.arn]
+  identity_source        = "method.request.header.Authorization"
 }
 
 # Create API Gateway Resource (endpoint path)
@@ -17,12 +65,29 @@ resource "aws_api_gateway_resource" "resource" {
   path_part   = "schedule"  # This is the path after the API URL (e.g., /schedule)
 }
 
+# Create request validator for API Gateway
+resource "aws_api_gateway_request_validator" "validator" {
+  name                        = "request-validator"
+  rest_api_id                 = aws_api_gateway_rest_api.api.id
+  validate_request_body       = true
+  validate_request_parameters = true
+}
+
 # Create API Gateway Method (HTTP method)
 resource "aws_api_gateway_method" "method" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
   resource_id   = aws_api_gateway_resource.resource.id
-  http_method   = "POST"  # Using POST as the HTTP method for our Lambda function
-  authorization = "NONE"  # Can be changed to "COGNITO_USER_POOLS" if using Cognito
+  http_method   = "POST"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.my_cognito_authorizer.id
+  
+  # Add request validation
+  request_validator_id = aws_api_gateway_request_validator.validator.id
+  
+  # Request parameters (if needed)
+  request_parameters = {
+    "method.request.header.Content-Type" = true
+  }
 }
 
 # Create API Gateway Integration with Lambda
@@ -83,6 +148,46 @@ resource "aws_api_gateway_stage" "stage" {
   deployment_id = aws_api_gateway_deployment.deployment.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
   stage_name    = "prod"  # Stage name, e.g., prod, dev, test
+  
+  # Enable X-Ray tracing
+  xray_tracing_enabled = true
+  
+  # Enable caching
+  cache_cluster_enabled = true
+  cache_cluster_size    = "0.5"  # 0.5 GB cache
+  
+  # Access logging
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gateway_access_logs.arn
+    format = jsonencode({
+      requestId      = "$context.requestId"
+      ip             = "$context.identity.sourceIp"
+      caller         = "$context.identity.caller"
+      user           = "$context.identity.user"
+      requestTime    = "$context.requestTime"
+      httpMethod     = "$context.httpMethod"
+      resourcePath   = "$context.resourcePath"
+      status         = "$context.status"
+      protocol       = "$context.protocol"
+      responseLength = "$context.responseLength"
+    })
+  }
+  
+  depends_on = [aws_cloudwatch_log_group.api_gateway_access_logs]
+}
+
+# CloudWatch Log Group for API Gateway access logs
+resource "aws_cloudwatch_log_group" "api_gateway_access_logs" {
+  name              = "/aws/apigateway/${aws_api_gateway_rest_api.api.name}/access-logs"
+  retention_in_days = 365  # 1 year retention for compliance
+  
+  # Encrypt with KMS for security
+  kms_key_id = aws_kms_key.logs_key.arn
+  
+  tags = {
+    Name        = "API Gateway Access Logs"
+    Environment = "production"
+  }
 }
 
 # Grant Lambda permission to be invoked by API Gateway
@@ -98,8 +203,19 @@ resource "aws_lambda_permission" "api_gateway_lambda" {
 
 # Output the API Gateway URL
 output "api_gateway_url" {
-  value = "${aws_api_gateway_deployment.deployment.invoke_url}${aws_api_gateway_stage.stage.stage_name}/${aws_api_gateway_resource.resource.path_part}"
+  value = "https://${aws_api_gateway_rest_api.api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.stage.stage_name}/${aws_api_gateway_resource.resource.path_part}"
   description = "URL to access the API Gateway endpoint"
+}
+
+# Output Cognito User Pool information
+output "cognito_user_pool_id" {
+  value       = aws_cognito_user_pool.api_user_pool.id
+  description = "ID of the Cognito User Pool for API authentication"
+}
+
+output "cognito_user_pool_client_id" {
+  value       = aws_cognito_user_pool_client.api_user_pool_client.id
+  description = "ID of the Cognito User Pool Client"
 }
 
 # Add CloudWatch logs for API Gateway
@@ -112,9 +228,12 @@ resource "aws_api_gateway_method_settings" "all" {
   settings {
     metrics_enabled        = true
     logging_level          = "INFO"
-    data_trace_enabled     = true  # Enables detailed logging
+    data_trace_enabled     = false  # Disabled for security (no sensitive data in logs)
     throttling_burst_limit = 5000
     throttling_rate_limit  = 10000
+    caching_enabled        = true
+    cache_ttl_in_seconds   = 300
+    cache_data_encrypted   = true
   }
 }
 

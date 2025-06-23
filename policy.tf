@@ -120,8 +120,13 @@ resource "aws_iam_policy" "api_gateway_cloudwatch_policy" {
           "logs:GetLogEvents",
           "logs:FilterLogEvents"
         ]
-        Effect   = "Allow"
-        Resource = "*"
+        Effect = "Allow"
+        Resource = [
+          "arn:aws:logs:*:*:log-group:/aws/apigateway/*",
+          "arn:aws:logs:*:*:log-group:/aws/apigateway/*:*",
+          "arn:aws:logs:*:*:log-group:/aws/lambda/*",
+          "arn:aws:logs:*:*:log-group:/aws/lambda/*:*"
+        ]
       }
     ]
   })
