@@ -56,7 +56,7 @@ resource "aws_cognito_user_pool_client" "client" {
 
 # Domain for Cognito Hosted UI
 resource "aws_cognito_user_pool_domain" "main" {
-  domain       = "leocorp-auth-domain"
+  domain       = "leocorp-auth-domain-v2-${random_id.bucket_suffix.hex}"
   user_pool_id = aws_cognito_user_pool.user_pool.id
 }
 

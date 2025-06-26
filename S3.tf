@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "demo_bucket" {
-  bucket = "demo-bucket-leonardo"
+  bucket = "demo-bucket-leonardo-v2-${random_id.bucket_suffix.hex}"
 
   tags = {
     Name        = "Demo Bucket Leonardo"

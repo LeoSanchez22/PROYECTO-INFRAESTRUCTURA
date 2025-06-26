@@ -105,7 +105,7 @@ resource "aws_cloudfront_origin_access_identity" "oai" {
 
 # CloudFront Cache Policy
 resource "aws_cloudfront_cache_policy" "frontend_cache_policy" {
-  name        = "frontend-cache-policy"
+  name = "frontend-cache-policy-v2-${random_id.bucket_suffix.hex}"
   comment     = "Cache policy for frontend static assets"
   default_ttl = 86400
   max_ttl     = 31536000

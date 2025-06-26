@@ -1,6 +1,6 @@
 # S3 bucket for frontend assets
 resource "aws_s3_bucket" "frontend_bucket" {
-  bucket = "leocorp-frontend-${terraform.workspace}"
+  bucket = "leocorp-frontend-v2-${terraform.workspace}-${random_id.bucket_suffix.hex}"
   
   tags = {
     Name        = "Frontend Bucket"

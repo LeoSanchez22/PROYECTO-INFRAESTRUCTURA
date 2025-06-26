@@ -178,7 +178,7 @@ resource "aws_api_gateway_stage" "stage" {
 
 # CloudWatch Log Group for API Gateway access logs
 resource "aws_cloudwatch_log_group" "api_gateway_access_logs" {
-  name              = "/aws/apigateway/${aws_api_gateway_rest_api.api.name}/access-logs"
+  name              = "/aws/apigateway/lambda-api-gateway-v2-${random_id.bucket_suffix.hex}/access-logs"
   retention_in_days = 365  # 1 year retention for compliance
   
   # Encrypt with KMS for security
@@ -223,7 +223,7 @@ resource "aws_api_gateway_method_settings" "all" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   stage_name  = aws_api_gateway_stage.stage.stage_name
   method_path = "*/*"  # All resources and methods
-  depends_on  = [aws_api_gateway_account.api_gateway_account]
+  # depends_on  = [aws_api_gateway_account.api_gateway_account]  # Commented out - account config disabled
 
   settings {
     metrics_enabled        = true

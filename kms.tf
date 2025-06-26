@@ -41,7 +41,7 @@ resource "aws_kms_key" "logs_key" {
 }
 
 resource "aws_kms_alias" "logs_key_alias" {
-  name          = "alias/cloudwatch-logs-key"
+  name          = "alias/cloudwatch-logs-key-v2-${random_id.bucket_suffix.hex}"
   target_key_id = aws_kms_key.logs_key.key_id
 }
 
@@ -88,7 +88,7 @@ resource "aws_kms_key" "lambda_key" {
 }
 
 resource "aws_kms_alias" "lambda_key_alias" {
-  name          = "alias/lambda-encryption-key"
+  name          = "alias/lambda-encryption-key-v2-${random_id.bucket_suffix.hex}"
   target_key_id = aws_kms_key.lambda_key.key_id
 }
 
@@ -135,6 +135,6 @@ resource "aws_kms_key" "dynamodb_key" {
 }
 
 resource "aws_kms_alias" "dynamodb_key_alias" {
-  name          = "alias/dynamodb-encryption-key"
+  name          = "alias/dynamodb-encryption-key-v2-${random_id.bucket_suffix.hex}"
   target_key_id = aws_kms_key.dynamodb_key.key_id
 }

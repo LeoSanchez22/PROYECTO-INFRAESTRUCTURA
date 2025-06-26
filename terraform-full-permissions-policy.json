@@ -1,0 +1,47 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:*",
+                "s3:*",
+                "iam:*",
+                "lambda:*",
+                "logs:*",
+                "dynamodb:*",
+                "sqs:*",
+                "apigateway:*",
+                "cognito-idp:*",
+                "cognito-identity:*",
+                "cloudfront:*",
+                "kms:*",
+                "wafv2:*",
+                "acm:*",
+                "route53:*",
+                "cloudwatch:*",
+                "events:*",
+                "sns:*",
+                "ssm:*",
+                "secretsmanager:*",
+                "elasticache:*",
+                "rds:*",
+                "application-autoscaling:*",
+                "autoscaling:*",
+                "elasticloadbalancing:*",
+                "ecs:*",
+                "ecr:*",
+                "cloudformation:*",
+                "sts:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:PassRole"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

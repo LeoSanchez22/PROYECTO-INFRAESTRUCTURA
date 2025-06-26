@@ -17,7 +17,7 @@ resource "aws_s3_bucket_acl" "cloudfront_logs_bucket_acl" {
 
 # S3 Bucket for CloudFront Access Logs
 resource "aws_s3_bucket" "cloudfront_logs" {
-  bucket = "cloudfront-access-logs-${data.aws_caller_identity.current.account_id}"
+  bucket = "cloudfront-access-logs-v2-${data.aws_caller_identity.current.account_id}-${random_id.bucket_suffix.hex}"
 
   tags = {
     Name        = "CloudFront-Access-Logs"

@@ -56,7 +56,7 @@ output "s3_event_notification_topic_arn" {
 }
 
 resource "aws_kms_alias" "s3_encryption_key_alias" {
-  name          = "alias/s3-encryption-key"
+  name          = "alias/s3-encryption-key-v2-${random_id.bucket_suffix.hex}"
   target_key_id = aws_kms_key.s3_encryption_key.key_id
 }
 
@@ -378,8 +378,11 @@ resource "aws_s3_bucket_notification" "frontend_bucket_notification" {
 
 # Cross-region replication for disaster recovery (optional but recommended)
 resource "aws_s3_bucket_replication_configuration" "frontend_bucket_replication" {
-  # Depends on bucket versioning (defined in frontend_s3.tf)
-  depends_on = [aws_s3_bucket_versioning.frontend_bucket_versioning]
+  # Depends on bucket versioning for BOTH source and destination buckets
+  depends_on = [
+    aws_s3_bucket_versioning.frontend_bucket_versioning,
+    aws_s3_bucket_versioning.replica_bucket_versioning
+  ]
 
   role   = aws_iam_role.replication_role.arn
   bucket = aws_s3_bucket.frontend_bucket.id
@@ -398,7 +401,7 @@ resource "aws_s3_bucket_replication_configuration" "frontend_bucket_replication"
 # Replica bucket in another region
 resource "aws_s3_bucket" "frontend_bucket_replica" {
   provider = aws.replica
-  bucket   = "${var.bucket_name_prefix}-frontend-replica-${data.aws_caller_identity.current.account_id}"
+  bucket   = "${var.bucket_name_prefix}-frontend-replica-v2-${data.aws_caller_identity.current.account_id}-${random_id.bucket_suffix.hex}"
 
   tags = {
     Name        = "Frontend Bucket Replica"
@@ -535,7 +538,7 @@ resource "aws_s3_bucket_notification" "replica_bucket_notification" {
 
 # IAM role for replication
 resource "aws_iam_role" "replication_role" {
-  name = "s3-replication-role"
+  name = "s3-replication-role-v2-${random_id.bucket_suffix.hex}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -553,7 +556,7 @@ resource "aws_iam_role" "replication_role" {
 
 # IAM policy for replication
 resource "aws_iam_policy" "replication_policy" {
-  name = "s3-replication-policy"
+  name = "s3-replication-policy-v2-${random_id.bucket_suffix.hex}"
 
   policy = jsonencode({
     Version = "2012-10-17"

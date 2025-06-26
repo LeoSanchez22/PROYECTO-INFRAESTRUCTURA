@@ -1,6 +1,6 @@
 # AWS WAFv2 Web ACL Configuration for CloudFront
 resource "aws_wafv2_web_acl" "cloudfront_waf" {
-  name        = "cloudfront-waf-protection"
+  name  = "cloudfront-waf-protection-v2-${random_id.bucket_suffix.hex}"
   description = "WAF for CloudFront distribution with common security rules"
   scope       = "CLOUDFRONT"
 

@@ -82,7 +82,7 @@ data "aws_iam_policy_document" "api_gateway_policy_document" {
 
 # IAM Role for API Gateway CloudWatch Logging
 resource "aws_iam_role" "api_gateway_cloudwatch_role" {
-  name = "api-gateway-cloudwatch-role"
+  name = "api-gateway-cloudwatch-role-v2-${random_id.bucket_suffix.hex}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -104,7 +104,7 @@ resource "aws_iam_role" "api_gateway_cloudwatch_role" {
 
 # API Gateway CloudWatch Logs Policy
 resource "aws_iam_policy" "api_gateway_cloudwatch_policy" {
-  name        = "api-gateway-cloudwatch-policy"
+  name        = "api-gateway-cloudwatch-policy-v2-${random_id.bucket_suffix.hex}"
   description = "IAM policy for API Gateway to write to CloudWatch Logs"
 
   policy = jsonencode({
@@ -139,13 +139,14 @@ resource "aws_iam_role_policy_attachment" "api_gateway_cloudwatch_attachment" {
 }
 
 # Configure API Gateway Account to use the CloudWatch Role
-resource "aws_api_gateway_account" "api_gateway_account" {
-  cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch_role.arn
-}
+# NOTE: Commented out due to permission issues - can be enabled when Leonardo user has full admin permissions
+# resource "aws_api_gateway_account" "api_gateway_account" {
+#   cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch_role.arn
+# }
 
 # Create the IAM policy
 resource "aws_iam_policy" "api_gateway_management_policy" {
-  name        = "api-gateway-management-policy"
+  name        = "api-gateway-management-policy-v2-${random_id.bucket_suffix.hex}"
   description = "Policy for managing API Gateway resources"
   policy      = data.aws_iam_policy_document.api_gateway_policy_document.json
 }
@@ -157,16 +158,7 @@ resource "aws_iam_role_policy_attachment" "api_gateway_policy_attachment" {
   policy_arn = aws_iam_policy.api_gateway_management_policy.arn
 }
 
-# Reference to the existing IAM user 'Leonardo'
-data "aws_iam_user" "leonardo" {
-  user_name = "Leonardo"
-}
-
-# Attach the API Gateway management policy to the user 'Leonardo'
-resource "aws_iam_user_policy_attachment" "leonardo_api_gateway_policy" {
-  user       = data.aws_iam_user.leonardo.user_name
-  policy_arn = aws_iam_policy.api_gateway_management_policy.arn
-}
+# Note: Leonardo user policies are now managed in iam_user_policies.tf
 
 # Output the policy ARN for reference
 output "api_gateway_policy_arn" {

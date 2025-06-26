@@ -1,0 +1,170 @@
+#!/usr/bin/env groovy
+
+pipeline {
+    agent any
+    
+    parameters {
+        booleanParam(
+            name: 'AUTO_APPROVE',
+            defaultValue: false,
+            description: 'Automatically approve and apply Terraform changes'
+        )
+        choice(
+            name: 'TERRAFORM_ACTION',
+            choices: ['plan', 'apply'],
+            description: 'Select Terraform action to perform'
+        )
+    }
+    
+    environment {
+        TERRAFORM_DIR = '/home/leonardo-sanchez/PROYECTO-INFRAESTRUCTURA'
+        AWS_DEFAULT_REGION = 'us-east-1'
+        TF_IN_AUTOMATION = 'true'
+        TF_INPUT = '0'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    echo "Working directly in: ${env.TERRAFORM_DIR}"
+                    echo "Current user: ${sh(script: 'whoami', returnStdout: true).trim()}"
+                    echo "Current directory permissions:"
+                    sh "ls -la ${env.TERRAFORM_DIR}"
+                }
+            }
+        }
+        
+        stage('Terraform Init') {
+            steps {
+                dir("${env.TERRAFORM_DIR}") {
+                    script {
+                        echo "Initializing Terraform in ${env.TERRAFORM_DIR}"
+                        sh '''
+                            #!/bin/bash
+                            set -e
+                            terraform --version
+                            terraform init -input=false
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Terraform Validate') {
+            steps {
+                dir("${env.TERRAFORM_DIR}") {
+                    script {
+                        echo "Validating Terraform configuration"
+                        sh '''
+                            #!/bin/bash
+                            set -e
+                            terraform validate
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Terraform Plan') {
+            steps {
+                dir("${env.TERRAFORM_DIR}") {
+                    script {
+                        echo "Creating Terraform execution plan"
+                        sh '''
+                            #!/bin/bash
+                            set -e
+                            terraform plan -input=false -out=tfplan
+                            echo "Plan created successfully"
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Terraform Apply') {
+            when {
+                anyOf {
+                    allOf {
+                        params.TERRAFORM_ACTION == 'apply'
+                        params.AUTO_APPROVE == true
+                    }
+                    allOf {
+                        params.TERRAFORM_ACTION == 'apply'
+                        params.AUTO_APPROVE == false
+                    }
+                }
+            }
+            steps {
+                dir("${env.TERRAFORM_DIR}") {
+                    script {
+                        if (params.AUTO_APPROVE) {
+                            echo "Auto-applying Terraform changes"
+                            sh '''
+                                #!/bin/bash
+                                set -e
+                                terraform apply -input=false tfplan
+                                echo "Terraform apply completed successfully"
+                            '''
+                        } else {
+                            echo "Manual approval required for Terraform apply"
+                            input message: 'Do you want to apply the Terraform plan?', ok: 'Apply',
+                                  submitterParameter: 'APPROVER'
+                            echo "Approved by: ${env.APPROVER}"
+                            sh '''
+                                #!/bin/bash
+                                set -e
+                                terraform apply -input=false tfplan
+                                echo "Terraform apply completed successfully"
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Show Terraform State') {
+            when {
+                params.TERRAFORM_ACTION == 'apply'
+            }
+            steps {
+                dir("${env.TERRAFORM_DIR}") {
+                    script {
+                        echo "Showing current Terraform state"
+                        sh '''
+                            #!/bin/bash
+                            set -e
+                            echo "=== Terraform State List ==="
+                            terraform state list
+                            echo "=== Terraform Output ==="
+                            terraform output
+                        '''
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            dir("${env.TERRAFORM_DIR}") {
+                script {
+                    // Clean up plan file
+                    sh '''
+                        #!/bin/bash
+                        if [ -f tfplan ]; then
+                            rm -f tfplan
+                            echo "Cleaned up terraform plan file"
+                        fi
+                    '''
+                }
+            }
+        }
+        success {
+            echo "Terraform pipeline completed successfully!"
+        }
+        failure {
+            echo "Terraform pipeline failed. Check the logs for details."
+        }
+    }
+}

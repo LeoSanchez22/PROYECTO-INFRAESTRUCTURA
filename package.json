@@ -7,7 +7,7 @@
     "install-deps": "npm install",
     "build": "rm -rf node_modules && npm install --production && mkdir -p dist && rm -f dist/lambda_function.zip && zip -r dist/lambda_function.zip index.js node_modules package.json",
     "deploy": "npm run build && terraform apply",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [
     "aws",
@@ -22,6 +22,8 @@
     "aws-sdk": "^2.1402.0",
     "uuid": "^9.0.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "jest": "^29.5.0"
+  }
 }
 

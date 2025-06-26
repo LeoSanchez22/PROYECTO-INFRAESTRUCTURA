@@ -1,6 +1,6 @@
 # IAM Role for Lambda with CloudWatch permissions
 resource "aws_iam_role" "lambda_role" {
-  name = "lambda_execution_role"
+  name = "lambda_execution_role_v2_${random_id.bucket_suffix.hex}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -18,7 +18,7 @@ resource "aws_iam_role" "lambda_role" {
 
 # IAM Policy for CloudWatch Logs
 resource "aws_iam_policy" "lambda_logging" {
-  name        = "lambda_logging_policy"
+  name        = "lambda_logging_policy_v2_${random_id.bucket_suffix.hex}"
   description = "IAM policy for logging from Lambda to CloudWatch"
 
   policy = jsonencode({
@@ -45,7 +45,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 
 # IAM Policy for S3 and DynamoDB access
 resource "aws_iam_policy" "lambda_storage_access" {
-  name        = "lambda_storage_access_policy"
+  name        = "lambda_storage_access_policy_v2_${random_id.bucket_suffix.hex}"
   description = "IAM policy for Lambda to access S3 and DynamoDB"
 
   policy = jsonencode({
@@ -85,6 +85,32 @@ resource "aws_iam_role_policy_attachment" "lambda_storage" {
   policy_arn = aws_iam_policy.lambda_storage_access.arn
 }
 
+# IAM Policy for SQS Dead Letter Queue access
+resource "aws_iam_policy" "lambda_sqs_access" {
+  name        = "lambda_sqs_access_policy_v2_${random_id.bucket_suffix.hex}"
+  description = "IAM policy for Lambda to send messages to SQS Dead Letter Queue"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "sqs:SendMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Effect = "Allow"
+        Resource = aws_sqs_queue.lambda_dlq.arn
+      }
+    ]
+  })
+}
+
+# Attach SQS IAM policy to role
+resource "aws_iam_role_policy_attachment" "lambda_sqs" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.lambda_sqs_access.arn
+}
+
 # CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
   name              = "/aws/lambda/${aws_lambda_function.my_lambda.function_name}"
@@ -104,7 +130,7 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 
 # Dead Letter Queue for Lambda
 resource "aws_sqs_queue" "lambda_dlq" {
-  name = "lambda-dlq"
+  name = "lambda-dlq-v2-${random_id.bucket_suffix.hex}"
   
   # Encrypt SQS queue
   kms_master_key_id = aws_kms_key.lambda_key.arn
@@ -116,7 +142,7 @@ resource "aws_sqs_queue" "lambda_dlq" {
 
 # Lambda Function
 resource "aws_lambda_function" "my_lambda" {
-  function_name = "my-lambda-function"
+  function_name = "my-lambda-function-v2-${random_id.bucket_suffix.hex}"
   # Path to the deployment package
   filename         = "dist/lambda_function.zip"
   source_code_hash = filebase64sha256("dist/lambda_function.zip")
@@ -132,8 +158,7 @@ resource "aws_lambda_function" "my_lambda" {
     mode = "Active"
   }
   
-  # Set concurrent execution limit
-  reserved_concurrent_executions = 100
+  # Reserved concurrent executions not configured to avoid account limit issues
   
   # Configure Dead Letter Queue
   dead_letter_config {
