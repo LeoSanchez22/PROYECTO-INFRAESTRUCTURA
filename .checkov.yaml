@@ -1,0 +1,39 @@
+# Configuración de Checkov para excluir falsos positivos
+framework:
+  - terraform
+  - dockerfile
+  - kubernetes
+  - github_configuration
+  - gitlab_configuration
+
+# Exclusiones por ID de check
+skip-check:
+  # Exclusiones para falsos positivos de secrets en archivos AWS CLI
+  - CKV_SECRET_6  # Base64 High Entropy String en archivos de configuración AWS
+  - CKV_SECRET_2  # AWS Access Key en documentación/ejemplos
+
+# Exclusiones por archivos específicos
+skip-path:
+  # Archivos de configuración AWS CLI que contienen tokens de ejemplo
+  - "/aws/dist/awscli/botocore/data/s3/2006-03-01/paginators-1.json"
+  - "/aws/dist/awscli/botocore/data/s3tables/2018-05-10/paginators-1.json"
+  - "/aws/dist/awscli/botocore/data/servicecatalog/2015-12-10/paginators-1.json"
+  - "/aws/dist/awscli/botocore/data/ssm-quicksetup/2018-05-10/paginators-1.json"
+  - "/aws/dist/awscli/botocore/data/sts/2011-06-15/service-2.json"
+  - "/aws/dist/awscli/botocore/data/swf/2012-01-25/paginators-1.json"
+  # Excluir todos los archivos de configuración de AWS CLI que son falsos positivos
+  - "**/awscli/botocore/data/**/paginators-1.json"
+  - "**/awscli/botocore/data/**/service-2.json"
+  
+# Configuración de salida
+quiet: false
+compact: false
+
+# Configuración de reportes
+output:
+  - cli
+  - json
+
+# Directorio de salida para reportes
+output-file-path: "checkov-report.json"
+

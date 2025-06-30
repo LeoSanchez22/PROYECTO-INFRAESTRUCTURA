@@ -8,10 +8,11 @@ output "cloudfront_domain" {
   description = "CloudFront distribution domain name"
 }
 
-output "cognito_user_pool_id" {
-  value = aws_cognito_user_pool.user_pool.id
-  description = "Cognito User Pool ID"
-}
+# Output eliminado para evitar duplicado - ya está definido en api_gateway.tf
+# output "cognito_user_pool_id" {
+#   value = aws_cognito_user_pool.user_pool.id
+#   description = "Cognito User Pool ID"
+# }
 
 output "cognito_client_id" {
   value = aws_cognito_user_pool_client.client.id

@@ -27,7 +27,6 @@ terraform.rc
 awscliv2.zip
 
 # Lambda deployment packages
-lambda_function.zip
 
 # Local environment files
 .env
@@ -51,3 +50,16 @@ lambda_function.zip
 ehthumbs.db
 Thumbs.db
 
+monitoring/monitoring/.env
+
+# Node.js dependencies
+node_modules/
+*/node_modules/
+**/node_modules/
+
+# npm/yarn files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock

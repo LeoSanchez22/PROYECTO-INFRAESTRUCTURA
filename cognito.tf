@@ -24,11 +24,39 @@ resource "aws_cognito_user_pool_client" "client" {
   ]
 
   generate_secret = false
+  
+  # OAuth 2.0 Configuration
+  callback_urls = [
+    "http://localhost:3000",
+    "http://localhost:5000",
+    "https://${aws_cloudfront_distribution.frontend_distribution.domain_name}"
+  ]
+  
+  logout_urls = [
+    "http://localhost:3000",
+    "http://localhost:5000",
+    "https://${aws_cloudfront_distribution.frontend_distribution.domain_name}"
+  ]
+  
+  allowed_oauth_flows = [
+    "code",
+    "implicit"
+  ]
+  
+  allowed_oauth_flows_user_pool_client = true
+  
+  allowed_oauth_scopes = [
+    "openid",
+    "email",
+    "profile"
+  ]
+  
+  supported_identity_providers = ["COGNITO"]
 }
 
 # Domain for Cognito Hosted UI
 resource "aws_cognito_user_pool_domain" "main" {
-  domain       = "leocorp-auth-domain"
+  domain       = "leocorp-auth-domain-v2-${random_id.bucket_suffix.hex}"
   user_pool_id = aws_cognito_user_pool.user_pool.id
 }
 
