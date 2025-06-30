@@ -77,10 +77,11 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "schedule_encrypti
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.s3_encryption_key.arn
-      sse_algorithm     = "aws:kms"
+      # Cambiado a encriptación AES256 gratuita para desarrollo
+      sse_algorithm = "AES256"
+      # kms_master_key_id = aws_kms_key.s3_encryption_key.arn
     }
-    bucket_key_enabled = true
+    # bucket_key_enabled removido - no necesario para AES256
   }
 }
 
@@ -145,8 +146,9 @@ resource "aws_dynamodb_table" "schedule_history" {
   }
 
   server_side_encryption {
-    enabled     = true
-    kms_key_arn = aws_kms_key.dynamodb_key.arn  # Use customer-managed KMS key
+    enabled = true
+    # kms_key_arn comentado para usar encriptación AWS gratuita
+    # kms_key_arn = aws_kms_key.dynamodb_key.arn
   }
 
   tags = {

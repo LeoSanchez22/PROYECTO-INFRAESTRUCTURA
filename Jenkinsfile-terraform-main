@@ -1,0 +1,403 @@
+pipeline {
+    agent any
+    
+    environment {
+        // Variables de Terraform
+        TF_IN_AUTOMATION = 'true'
+        TF_INPUT = 'false'
+        TF_LOG = 'INFO'
+        TF_CLI_ARGS = '-no-color'
+        
+        // Workspace principal del proyecto
+        PROJECT_PATH = '/home/leonardo-sanchez/PROYECTO-INFRAESTRUCTURA'
+        
+        // Jenkins heredará las variables AWS del environment del sistema
+    }
+    
+    parameters {
+        choice(
+            name: 'ACTION',
+            choices: ['apply', 'destroy', 'plan-only'],
+            description: '🚀 Acción a ejecutar (SOLO UNA)'
+        )
+        choice(
+            name: 'WORKSPACE',
+            choices: ['default', 'dev', 'staging', 'prod'],
+            description: '🏢 Workspace de Terraform'
+        )
+        booleanParam(
+            name: 'AUTO_APPROVE',
+            defaultValue: false,
+            description: '⚡ Ejecutar sin confirmación manual'
+        )
+        string(
+            name: 'TARGET_RESOURCE',
+            defaultValue: '',
+            description: '🎯 Recurso específico (opcional)'
+        )
+    }
+    
+    stages {
+        stage('🔧 Verificación Inicial') {
+            steps {
+                script {
+                    echo "════════════════════════════════════════════════════════════════════════"
+                    echo "🚀 TERRAFORM PIPELINE - ${params.ACTION.toUpperCase()}"
+                    echo "════════════════════════════════════════════════════════════════════════"
+                    echo "📁 Directorio: ${env.PROJECT_PATH}"
+                    echo "🏢 Workspace: ${params.WORKSPACE}"
+                    echo "⚡ Auto-approve: ${params.AUTO_APPROVE}"
+                    if (params.TARGET_RESOURCE) {
+                        echo "🎯 Recurso objetivo: ${params.TARGET_RESOURCE}"
+                    }
+                    echo "════════════════════════════════════════════════════════════════════════"
+                }
+                
+                sh '''
+                    # Cambiar al directorio del proyecto
+                    cd "${PROJECT_PATH}"
+                    echo "📂 Directorio actual: $(pwd)"
+                    
+                    # Verificar herramientas
+                    echo "🔍 Verificando Terraform..."
+                    if command -v terraform >/dev/null 2>&1; then
+                        echo "✅ Terraform encontrado: $(terraform version | head -1)"
+                    else
+                        echo "❌ Terraform no encontrado"
+                        exit 1
+                    fi
+                    
+                    echo "🔍 Verificando AWS CLI..."
+                    if command -v aws >/dev/null 2>&1; then
+                        echo "✅ AWS CLI encontrado: $(aws --version 2>&1 | cut -d' ' -f1)"
+                    else
+                        echo "❌ AWS CLI no encontrado"
+                        exit 1
+                    fi
+                    
+                    # Verificar credenciales AWS
+                    echo "🔍 Verificando credenciales AWS..."
+                    if aws sts get-caller-identity >/dev/null 2>&1; then
+                        echo "✅ Credenciales AWS válidas"
+                        echo "👤 Usuario: $(aws sts get-caller-identity --query 'Arn' --output text 2>/dev/null || echo 'No disponible')"
+                    else
+                        echo "❌ Error de credenciales AWS"
+                        echo "💡 Verifica que las variables AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY estén configuradas"
+                        exit 1
+                    fi
+                    
+                    # Verificar archivos Terraform
+                    echo "🔍 Verificando archivos Terraform..."
+                    if ls *.tf >/dev/null 2>&1; then
+                        echo "✅ Archivos .tf encontrados: $(ls *.tf | wc -l)"
+                        echo "📋 Archivos principales: $(ls *.tf | head -5 | tr '\n' ' ')"
+                    else
+                        echo "❌ No se encontraron archivos .tf en $(pwd)"
+                        echo "📂 Contenido del directorio:"
+                        ls -la
+                        exit 1
+                    fi
+                    
+                    echo "✅ Todas las verificaciones pasaron correctamente"
+                '''
+            }
+        }
+        
+        stage('🏢 Configurar Workspace') {
+            steps {
+                sh '''
+                    cd "${PROJECT_PATH}"
+                    
+                    echo "🔧 Inicializando Terraform..."
+                    terraform init -upgrade
+                    
+                    # Mostrar workspace actual
+                    CURRENT_WS=$(terraform workspace show)
+                    echo "📂 Workspace actual: $CURRENT_WS"
+                    
+                    # Cambiar workspace si es necesario
+                    if [ "$CURRENT_WS" != "${WORKSPACE}" ]; then
+                        echo "🔄 Cambiando a workspace: ${WORKSPACE}"
+                        if terraform workspace select "${WORKSPACE}" 2>/dev/null; then
+                            echo "✅ Workspace seleccionado: ${WORKSPACE}"
+                        else
+                            echo "➕ Creando nuevo workspace: ${WORKSPACE}"
+                            terraform workspace new "${WORKSPACE}"
+                        fi
+                    fi
+                    
+                    echo "📂 Workspace activo: $(terraform workspace show)"
+                '''
+            }
+        }
+        
+        stage('📋 Terraform Plan (Apply)') {
+            when {
+                anyOf {
+                    expression { params.ACTION == 'apply' }
+                    expression { params.ACTION == 'plan-only' }
+                }
+            }
+            steps {
+                sh '''
+                    cd "${PROJECT_PATH}"
+                    echo "📋 Generando plan de aplicación..."
+                    
+                    # Preparar comando de plan
+                    PLAN_CMD="terraform plan -input=false -out=tfplan"
+                    
+                    if [ -n "${TARGET_RESOURCE}" ]; then
+                        echo "🎯 Plan para recurso específico: ${TARGET_RESOURCE}"
+                        PLAN_CMD="$PLAN_CMD -target=${TARGET_RESOURCE}"
+                    fi
+                    
+                    echo "🚀 Ejecutando: $PLAN_CMD"
+                    $PLAN_CMD
+                    
+                    echo ""
+                    echo "📊 Resumen del plan:"
+                    terraform show -no-color tfplan | head -30
+                '''
+            }
+        }
+        
+        stage('🗑️ Terraform Plan (Destroy)') {
+            when {
+                expression { params.ACTION == 'destroy' }
+            }
+            steps {
+                sh '''
+                    cd "${PROJECT_PATH}"
+                    echo "🗑️ Generando plan de destrucción..."
+                    
+                    # Preparar comando de plan destroy
+                    PLAN_CMD="terraform plan -destroy -input=false -out=destroy.tfplan"
+                    
+                    if [ -n "${TARGET_RESOURCE}" ]; then
+                        echo "🎯 Destrucción para recurso específico: ${TARGET_RESOURCE}"
+                        PLAN_CMD="$PLAN_CMD -target=${TARGET_RESOURCE}"
+                    else
+                        echo "⚠️ DESTRUCCIÓN COMPLETA DE LA INFRAESTRUCTURA"
+                    fi
+                    
+                    echo "🚀 Ejecutando: $PLAN_CMD"
+                    $PLAN_CMD
+                    
+                    echo ""
+                    echo "📊 Resumen del plan de destrucción:"
+                    terraform show -no-color destroy.tfplan | head -30
+                '''
+            }
+        }
+        
+        stage('📊 Estado Actual') {
+            steps {
+                sh '''
+                    cd "${PROJECT_PATH}"
+                    echo "📊 Estado actual de recursos:"
+                    
+                    RESOURCE_COUNT=$(terraform state list 2>/dev/null | wc -l || echo "0")
+                    echo "📈 Total de recursos gestionados: $RESOURCE_COUNT"
+                    
+                    if [ "$RESOURCE_COUNT" -gt 0 ]; then
+                        echo ""
+                        echo "📦 Recursos actuales:"
+                        terraform state list | head -15
+                        if [ "$RESOURCE_COUNT" -gt 15 ]; then
+                            echo "... y $(($RESOURCE_COUNT - 15)) recursos más"
+                        fi
+                    fi
+                    
+                    echo ""
+                    echo "📤 Outputs actuales:"
+                    terraform output 2>/dev/null || echo "No hay outputs disponibles"
+                '''
+            }
+        }
+        
+        stage('✋ Confirmación Manual') {
+            when {
+                allOf {
+                    expression { !params.AUTO_APPROVE }
+                    anyOf {
+                        expression { params.ACTION == 'apply' }
+                        expression { params.ACTION == 'destroy' }
+                    }
+                }
+            }
+            steps {
+                script {
+                    def actionText = params.ACTION == 'destroy' ? 'DESTRUIR' : 'APLICAR'
+                    def warningText = params.ACTION == 'destroy' ? '🚨 OPERACIÓN DESTRUCTIVA - NO REVERSIBLE' : '🚀 APLICACIÓN DE CAMBIOS'
+                    def buttonText = params.ACTION == 'destroy' ? '🗑️ SÍ, DESTRUIR' : '✅ SÍ, APLICAR'
+                    
+                    echo "${warningText}"
+                    echo "════════════════════════════════════════════════════════════════════════"
+                    echo "🏢 Workspace: ${params.WORKSPACE}"
+                    if (params.TARGET_RESOURCE) {
+                        echo "🎯 Recurso: ${params.TARGET_RESOURCE}"
+                    } else {
+                        echo "🎯 Scope: Toda la infraestructura del workspace"
+                    }
+                    echo "════════════════════════════════════════════════════════════════════════"
+                    
+                    timeout(time: 10, unit: 'MINUTES') {
+                        input message: "¿Confirmas que deseas ${actionText} estos cambios?", 
+                              ok: buttonText,
+                              submitterParameter: 'APPROVER'
+                    }
+                    
+                    echo "✅ Operación aprobada por: ${env.APPROVER ?: 'Usuario'}"
+                }
+            }
+        }
+        
+        stage('🚀 Terraform Apply') {
+            when {
+                expression { params.ACTION == 'apply' }
+            }
+            steps {
+                sh '''
+                    cd "${PROJECT_PATH}"
+                    echo "🚀 Aplicando cambios de infraestructura..."
+                    
+                    if [ ! -f "tfplan" ]; then
+                        echo "❌ No se encontró el archivo de plan"
+                        exit 1
+                    fi
+                    
+                    terraform apply -input=false tfplan
+                    
+                    echo ""
+                    echo "✅ Apply completado exitosamente"
+                    echo ""
+                    echo "📤 Outputs actualizados:"
+                    terraform output || echo "No hay outputs disponibles"
+                '''
+            }
+        }
+        
+        stage('🗑️ Terraform Destroy') {
+            when {
+                expression { params.ACTION == 'destroy' }
+            }
+            steps {
+                sh '''
+                    cd "${PROJECT_PATH}"
+                    echo "🗑️ Destruyendo infraestructura..."
+                    
+                    if [ ! -f "destroy.tfplan" ]; then
+                        echo "❌ No se encontró el archivo de plan de destrucción"
+                        exit 1
+                    fi
+                    
+                    terraform apply -input=false destroy.tfplan
+                    
+                    echo ""
+                    echo "✅ Destroy completado exitosamente"
+                    
+                    # Verificar recursos restantes
+                    REMAINING=$(terraform state list 2>/dev/null | wc -l || echo "0")
+                    if [ "$REMAINING" -eq 0 ]; then
+                        echo "✅ No quedan recursos en el estado"
+                    else
+                        echo "⚠️ Quedan $REMAINING recursos en el estado"
+                        terraform state list
+                    fi
+                '''
+            }
+        }
+        
+        stage('🔍 Verificación Final') {
+            steps {
+                sh '''
+                    cd "${PROJECT_PATH}"
+                    echo "🔍 Verificación final del estado..."
+                    
+                    echo "📂 Workspace: $(terraform workspace show)"
+                    
+                    RESOURCE_COUNT=$(terraform state list 2>/dev/null | wc -l || echo "0")
+                    echo "📈 Total de recursos: $RESOURCE_COUNT"
+                    
+                    if [ "$RESOURCE_COUNT" -gt 0 ]; then
+                        echo ""
+                        echo "📦 Recursos finales:"
+                        terraform state list | head -10
+                        if [ "$RESOURCE_COUNT" -gt 10 ]; then
+                            echo "... y $(($RESOURCE_COUNT - 10)) recursos más"
+                        fi
+                        
+                        echo ""
+                        echo "📤 Outputs finales:"
+                        terraform output || echo "No hay outputs disponibles"
+                    fi
+                    
+                    # Verificar con AWS CLI
+                    echo ""
+                    echo "🔍 Verificación AWS:"
+                    echo "👤 Usuario: $(aws sts get-caller-identity --query 'Arn' --output text)"
+                    echo "🌍 Región: $AWS_DEFAULT_REGION"
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            sh '''
+                cd "${PROJECT_PATH}"
+                # Limpiar archivos de plan temporales por seguridad
+                rm -f tfplan destroy.tfplan
+                
+                echo ""
+                echo "📋 RESUMEN DE LA OPERACIÓN:"
+                echo "════════════════════════════════════════════════════════════════════════"
+                echo "⚡ Acción ejecutada: ${ACTION}"
+                echo "🏢 Workspace: ${WORKSPACE}"
+                echo "📁 Directorio: ${PROJECT_PATH}"
+                echo "⏰ Completado: $(date)"
+                echo "════════════════════════════════════════════════════════════════════════"
+            '''
+        }
+        
+        success {
+            script {
+                def message = ""
+                switch(params.ACTION) {
+                    case 'apply':
+                        message = "🎉 ¡INFRAESTRUCTURA APLICADA EXITOSAMENTE!"
+                        break
+                    case 'destroy':
+                        message = "🗑️ ¡INFRAESTRUCTURA DESTRUIDA EXITOSAMENTE!"
+                        break
+                    case 'plan-only':
+                        message = "📋 ¡PLAN GENERADO EXITOSAMENTE!"
+                        break
+                }
+                echo message
+                echo "✅ Operación completada sin errores"
+                echo "📁 Todos los cambios se aplicaron en: ${env.PROJECT_PATH}"
+            }
+        }
+        
+        failure {
+            echo "❌ OPERACIÓN FALLÓ"
+            echo "🔍 Revisa los logs para identificar el problema"
+            echo "💡 Problemas comunes:"
+            echo "   - Credenciales AWS incorrectas"
+            echo "   - Conflictos de recursos"
+            echo "   - Límites de cuota alcanzados"
+            echo "   - Problemas de conectividad"
+            echo ""
+            echo "🔄 Para recuperación:"
+            echo "   1. Revisa: terraform state list"
+            echo "   2. Ejecuta: terraform plan"
+            echo "   3. Verifica credenciales AWS"
+        }
+        
+        aborted {
+            echo "⏹️ OPERACIÓN CANCELADA POR EL USUARIO"
+            echo "💾 El estado se mantiene en el último punto válido"
+        }
+    }
+}

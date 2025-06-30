@@ -31,8 +31,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "logs_encryption" 
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.s3_encryption_key.arn
-      sse_algorithm     = "aws:kms"
+      # Cambiado a encriptación AES256 gratuita para desarrollo
+      sse_algorithm = "AES256"
+      # kms_master_key_id = aws_kms_key.s3_encryption_key.arn
     }
   }
 }

@@ -182,7 +182,8 @@ resource "aws_cloudwatch_log_group" "api_gateway_access_logs" {
   retention_in_days = 365  # 1 year retention for compliance
   
   # Encrypt with KMS for security
-  kms_key_id = aws_kms_key.logs_key.arn
+  # kms_key_id comentado para usar encriptación AWS gratuita
+  # kms_key_id = aws_kms_key.logs_key.arn
   
   tags = {
     Name        = "API Gateway Access Logs"

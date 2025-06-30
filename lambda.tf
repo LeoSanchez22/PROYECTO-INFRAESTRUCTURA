@@ -117,7 +117,8 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
   retention_in_days = 365  # 1 year retention for compliance
   
   # Encrypt with KMS for security
-  kms_key_id = aws_kms_key.logs_key.arn
+  # kms_key_id comentado para usar encriptación AWS gratuita
+  # kms_key_id = aws_kms_key.logs_key.arn
   
   tags = {
     Name        = "Lambda Function Logs"
@@ -132,8 +133,8 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 resource "aws_sqs_queue" "lambda_dlq" {
   name = "lambda-dlq-v2-${random_id.bucket_suffix.hex}"
   
-  # Encrypt SQS queue
-  kms_master_key_id = aws_kms_key.lambda_key.arn
+  # Encrypt SQS queue - comentado para usar encriptación AWS gratuita
+  # kms_master_key_id = aws_kms_key.lambda_key.arn
   
   tags = {
     Name = "Lambda Dead Letter Queue"
@@ -173,8 +174,8 @@ resource "aws_lambda_function" "my_lambda" {
     }
   }
   
-  # Encrypt environment variables with KMS
-  kms_key_arn = aws_kms_key.lambda_key.arn
+  # Encrypt environment variables with KMS - comentado para ahorrar costos
+  # kms_key_arn = aws_kms_key.lambda_key.arn
   
   # Configure timeout and memory
   timeout     = 60

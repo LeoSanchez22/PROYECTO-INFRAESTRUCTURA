@@ -1,4 +1,11 @@
-# KMS key for S3 bucket encryption
+# ========================================
+# S3 ENCRYPTION - OPTIMIZED FOR DEV
+# ========================================
+# USANDO ENCRIPTACIÓN GRATUITA ($0/mes)
+
+# KMS key para S3 comentada para ahorrar costos
+# Descomenta si necesitas claves personalizadas en producción
+/*
 resource "aws_kms_key" "s3_encryption_key" {
   description             = "KMS key for S3 bucket encryption"
   deletion_window_in_days = 10
@@ -8,11 +15,14 @@ resource "aws_kms_key" "s3_encryption_key" {
     Name = "s3-encryption-key"
   }
 }
+*/
 
 # Create an SNS topic for S3 event notifications
+# Sin KMS personalizado - usa encriptación por defecto (gratuita)
 resource "aws_sns_topic" "s3_event_notification" {
-  name              = "s3-event-notification-topic"
-  kms_master_key_id = aws_kms_key.s3_encryption_key.arn
+  name = "s3-event-notification-topic"
+  # kms_master_key_id comentado para usar encriptación por defecto (gratuita)
+  # kms_master_key_id = aws_kms_key.s3_encryption_key.arn
   
   tags = {
     Name        = "S3 Event Notification Topic"
@@ -55,10 +65,13 @@ output "s3_event_notification_topic_arn" {
   description = "The ARN of the SNS topic for S3 event notifications"
 }
 
+# KMS alias comentado - usar encriptación por defecto
+/*
 resource "aws_kms_alias" "s3_encryption_key_alias" {
   name          = "alias/s3-encryption-key-v2-${random_id.bucket_suffix.hex}"
   target_key_id = aws_kms_key.s3_encryption_key.key_id
 }
+*/
 
 # Logging bucket for S3 access logs
 resource "aws_s3_bucket" "s3_logs_bucket" {
@@ -98,14 +111,15 @@ resource "aws_s3_bucket_public_access_block" "logs_bucket_access" {
   restrict_public_buckets = true
 }
 
-# Encryption for logs bucket
+# Encryption for logs bucket - usando encriptación gratuita
 resource "aws_s3_bucket_server_side_encryption_configuration" "logs_bucket_encryption" {
   bucket = aws_s3_bucket.s3_logs_bucket.id
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.s3_encryption_key.arn
-      sse_algorithm     = "aws:kms"
+      # Cambiado a encriptación AES256 gratuita
+      sse_algorithm = "AES256"
+      # kms_master_key_id = aws_kms_key.s3_encryption_key.arn
     }
   }
 }
@@ -409,17 +423,18 @@ resource "aws_s3_bucket" "frontend_bucket_replica" {
   }
 }
 
-# Server-side encryption for frontend_bucket_replica
+# Server-side encryption for frontend_bucket_replica - usando encriptación gratuita
 resource "aws_s3_bucket_server_side_encryption_configuration" "replica_bucket_encryption" {
   provider = aws.replica
   bucket = aws_s3_bucket.frontend_bucket_replica.id
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.replica_encryption_key.arn
-      sse_algorithm     = "aws:kms"
+      # Cambiado a encriptación AES256 gratuita
+      sse_algorithm = "AES256"
+      # kms_master_key_id = aws_kms_key.replica_encryption_key.arn
     }
-    bucket_key_enabled = true
+    # bucket_key_enabled = true  # No necesario para AES256
   }
 }
 
@@ -474,11 +489,12 @@ resource "aws_s3_bucket_lifecycle_configuration" "replica_bucket_lifecycle" {
   }
 }
 
-# SNS topic for replica bucket events (in replica region)
+# SNS topic for replica bucket events (in replica region) - sin KMS para ahorrar costos
 resource "aws_sns_topic" "replica_s3_event_notification" {
-  provider          = aws.replica
-  name              = "replica-s3-event-notification-topic"
-  kms_master_key_id = aws_kms_key.replica_encryption_key.arn
+  provider = aws.replica
+  name     = "replica-s3-event-notification-topic"
+  # kms_master_key_id comentado para usar encriptación por defecto (gratuita)
+  # kms_master_key_id = aws_kms_key.replica_encryption_key.arn
   
   tags = {
     Name        = "Replica S3 Event Notification Topic"
@@ -486,7 +502,9 @@ resource "aws_sns_topic" "replica_s3_event_notification" {
   }
 }
 
-# KMS key for replica region
+# KMS key for replica region - COMENTADO PARA AHORRAR COSTOS
+# Descomenta si necesitas encriptación personalizada en producción
+/*
 resource "aws_kms_key" "replica_encryption_key" {
   provider                = aws.replica
   description             = "KMS key for S3 bucket encryption in replica region"
@@ -497,6 +515,7 @@ resource "aws_kms_key" "replica_encryption_key" {
     Name = "replica-s3-encryption-key"
   }
 }
+*/
 
 # SNS topic policy for replica
 resource "aws_sns_topic_policy" "replica_s3_notification_policy" {

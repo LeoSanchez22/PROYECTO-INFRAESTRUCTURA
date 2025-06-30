@@ -1,3 +1,14 @@
+# ========================================
+# KMS CONFIGURATION - OPTIMIZED FOR DEV
+# ========================================
+# USANDO CLAVES AWS GRATUITAS ($0/mes)
+# Las claves AWS-managed son gratuitas y se gestionan automáticamente
+# ========================================
+
+# CLAVES KMS PERSONALIZADAS COMENTADAS PARA AHORRAR COSTOS
+# Descomenta si necesitas claves personalizadas en producción
+
+/*
 # KMS Key for CloudWatch Logs encryption
 resource "aws_kms_key" "logs_key" {
   description             = "KMS key for CloudWatch Logs encryption"
@@ -137,4 +148,35 @@ resource "aws_kms_key" "dynamodb_key" {
 resource "aws_kms_alias" "dynamodb_key_alias" {
   name          = "alias/dynamodb-encryption-key-v2-${random_id.bucket_suffix.hex}"
   target_key_id = aws_kms_key.dynamodb_key.key_id
+}
+*/
+
+# ========================================
+# CONFIGURACIÓN GRATUITA PARA DESARROLLO
+# ========================================
+# No se declaran recursos KMS - se usan claves AWS automáticamente
+
+locals {
+  # Configuración de encriptación gratuita para desarrollo
+  encryption_config = {
+    # Para S3 - AES256 es gratuito
+    s3_algorithm = "AES256"
+    
+    # Para servicios que requieren KMS - usar claves AWS-managed (gratuitas)
+    # No se referencian aquí, se usan directamente en los recursos
+    cost_per_month = "$0.00"
+    mode = "aws-managed-keys"
+  }
+}
+
+# Output para confirmar configuración
+output "kms_cost_optimization" {
+  description = "Configuración de encriptación optimizada para desarrollo"
+  value = {
+    mode             = local.encryption_config.mode
+    monthly_cost     = local.encryption_config.cost_per_month
+    s3_encryption    = local.encryption_config.s3_algorithm
+    kms_keys_custom  = "disabled (commented out)"
+    kms_keys_aws     = "enabled (free)"
+  }
 }
