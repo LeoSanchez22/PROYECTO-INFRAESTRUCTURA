@@ -76,7 +76,7 @@ resource "aws_kms_alias" "s3_encryption_key_alias" {
 # Logging bucket for S3 access logs
 resource "aws_s3_bucket" "s3_logs_bucket" {
   # Use the default provider (us-east-1) instead of eu_west_1
-  bucket = "${var.bucket_name_prefix}-logs-${data.aws_caller_identity.current.account_id}-${formatdate("YYYYMMDDhhmmss", timestamp())}"
+  bucket = "leonardo-project-logs-${data.aws_caller_identity.current.account_id}-${random_id.bucket_suffix.hex}"
 
   tags = {
     Name        = "S3 Access Logs Bucket"

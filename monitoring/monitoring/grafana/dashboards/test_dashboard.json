@@ -11,7 +11,7 @@
     {
       "datasource": {
         "type": "cloudwatch",
-        "uid": "cloudwatch"
+        "uid": "CloudWatch"
       },
       "fieldConfig": {
         "defaults": {
@@ -85,7 +85,7 @@
           "alias": "Invocations",
           "datasource": {
             "type": "cloudwatch",
-            "uid": "cloudwatch"
+            "uid": "CloudWatch"
           },
           "dimensions": {
             "FunctionName": "my-lambda-function"

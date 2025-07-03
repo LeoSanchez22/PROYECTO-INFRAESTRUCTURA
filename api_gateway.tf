@@ -143,20 +143,19 @@ resource "aws_api_gateway_deployment" "deployment" {
   ]
 }
 
-# Create API Gateway Stage
+# Create API Gateway Stage (FREE TIER ONLY)
 resource "aws_api_gateway_stage" "stage" {
   deployment_id = aws_api_gateway_deployment.deployment.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
   stage_name    = "prod"  # Stage name, e.g., prod, dev, test
   
-  # Enable X-Ray tracing
-  xray_tracing_enabled = true
+  # X-Ray tracing DISABLED (to avoid costs)
+  # xray_tracing_enabled = false
   
-  # Enable caching
-  cache_cluster_enabled = true
-  cache_cluster_size    = "0.5"  # 0.5 GB cache
+  # Caching DISABLED (to avoid costs)
+  # cache_cluster_enabled = false
   
-  # Access logging
+  # Access logging (FREE - using CloudWatch Logs)
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_gateway_access_logs.arn
     format = jsonencode({
@@ -227,14 +226,14 @@ resource "aws_api_gateway_method_settings" "all" {
   # depends_on  = [aws_api_gateway_account.api_gateway_account]  # Commented out - account config disabled
 
   settings {
-    metrics_enabled        = true
-    logging_level          = "INFO"
+    metrics_enabled        = true  # FREE - Basic CloudWatch metrics
+    logging_level          = "INFO"  # FREE - CloudWatch Logs
     data_trace_enabled     = false  # Disabled for security (no sensitive data in logs)
-    throttling_burst_limit = 5000
-    throttling_rate_limit  = 10000
-    caching_enabled        = true
-    cache_ttl_in_seconds   = 300
-    cache_data_encrypted   = true
+    throttling_burst_limit = 1000   # Reduced for FREE tier (default AWS limits)
+    throttling_rate_limit  = 2000   # Reduced for FREE tier (default AWS limits)
+    caching_enabled        = false  # DISABLED to avoid costs
+    # cache_ttl_in_seconds   = 300   # Commented out - no caching
+    # cache_data_encrypted   = true  # Commented out - no caching
   }
 }
 

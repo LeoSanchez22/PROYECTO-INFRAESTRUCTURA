@@ -1,0 +1,70 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "CloudWatchReadPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "cloudwatch:DescribeAlarmsForMetric",
+                "cloudwatch:DescribeAlarmHistory",
+                "cloudwatch:DescribeAlarms",
+                "cloudwatch:ListMetrics",
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:GetMetricData",
+                "cloudwatch:GetInsightRuleReport"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "CloudWatchLogsReadPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams",
+                "logs:GetLogEvents",
+                "logs:FilterLogEvents",
+                "logs:StartQuery",
+                "logs:StopQuery",
+                "logs:GetQueryResults"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "EC2ReadPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeTags",
+                "ec2:DescribeInstances",
+                "ec2:DescribeRegions"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "ResourceGroupsReadPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "resource-groups:ListGroupResources"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "TagReadPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "tag:GetResources"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "ObservabilityAccessManagerPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "oam:ListSinks",
+                "oam:ListLinks",
+                "oam:GetSink",
+                "oam:GetLink"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

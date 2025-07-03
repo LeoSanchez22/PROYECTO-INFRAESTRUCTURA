@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config();
+
 const AWS = require('aws-sdk');
 const axios = require('axios');
 const crypto = require('crypto');
@@ -5,10 +8,8 @@ const crypto = require('crypto');
 // Configure AWS SDK
 AWS.config.update({
   region: process.env.AWS_REGION || 'us-east-1',
-  credentials: new AWS.Credentials({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'your_access_key',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'your_secret_key'
-  })
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
 
 // Initialize CloudWatch Logs
@@ -128,9 +129,9 @@ function generateSessionId() {
 // Simulate CPU-intensive operation
 function simulateCpuLoad(duration = 100) {
   const startTime = Date.now();
+  let primes = [];
   while (Date.now() - startTime < duration) {
     // Calculate prime numbers or perform some CPU-intensive operation
-    let primes = [];
     for (let i = 0; i < 1000; i++) {
       let isPrime = true;
       for (let j = 2; j < i; j++) {

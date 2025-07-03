@@ -3,11 +3,14 @@ apiVersion: 1
 datasources:
   - name: CloudWatch
     type: cloudwatch
+    uid: CloudWatch
     access: proxy
     jsonData:
-      authType: default
+      authType: credentials
       defaultRegion: us-east-1
-      timeField: "@timestamp"
-    editable: true
+    secureJsonData:
+      accessKey: ${AWS_ACCESS_KEY_ID}
+      secretKey: ${AWS_SECRET_ACCESS_KEY}
     isDefault: true
+    editable: true
 
